@@ -1,6 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-This code is made to mimick Kiki but with additional features
+This code is made to mimick Kiki but with additional features. This is a similar
+method of text handling that I used with wordTeX -- and I think it is my favorite.
+Turn everything into the text into objects -- it only works if everything is 
+mututally exclusive, which fortunately it is with Regexp. (all groups contain
+more groups -- but a found group is never part of another group). 
+
+If this were not true, then doing substitutions on regular expressions would be
+impossible (how would you substitute two over-lapping expressions?)
+
+
 """
 import pdb
 import sys
@@ -8,20 +17,7 @@ sys.path.insert(1, '..')
 from cloudtb import dbe
 
 import re
-text = '''
-Chapman: I didn't expect a kind of Spanish Inquisition. 
-(JARRING CHORD - the cardinals burst in) 
-Ximinez: NOBODY expects the Spanish Inquisition! Our chief weapon is surprise...surprise and fear...fear and surprise.... Our two weapons are fear and surprise...and ruthless efficiency.... Our *three* weapons are fear, surprise, and ruthless efficiency...and an almost fanatical devotion to the Pope.... Our *four*...no... *Amongst* our weapons.... Amongst our weaponry...are such elements as fear, surprise.... I'll come in again. (Exit and exeunt)
-'''
-regexp = r'''(([a-zA-Z']+\s)+?expect(.*?)(the )*Spanish Inquisition(!|.))'''
 
-rcmp = re.compile(regexp)
-se = rcmp.search(text)
-print se.groups()
-print (se.group(0), se.group(1))
-print se.span # returns start and end of regexp
-print
-print 'OBJECTIFYING'
 
 def objectify(text, regexp):
     stop = 0
@@ -102,14 +98,20 @@ class reobj(object):
             start = '{{{0}}}'.format(self.match)
         str_data = ''.join([str(n) for n in self.data_list])
         return start + '({0})<P{1}>'.format(str_data, self.index)
-        
-    def get_formatted(self):
-        '''returns in the proper format for viewing (what is this!?)'''
-        pass
 
-dl = objectify(text, rcmp)
-
-print ''.join([str(n) for n in dl])
+if __name__ == '__main__':
+    text = '''
+    Chapman: I didn't expect a kind of Spanish Inquisition. 
+    (JARRING CHORD - the cardinals burst in) 
+    Ximinez: NOBODY expects the Spanish Inquisition! Our chief weapon is surprise...surprise and fear...fear and surprise.... Our two weapons are fear and surprise...and ruthless efficiency.... Our *three* weapons are fear, surprise, and ruthless efficiency...and an almost fanatical devotion to the Pope.... Our *four*...no... *Amongst* our weapons.... Amongst our weaponry...are such elements as fear, surprise.... I'll come in again. (Exit and exeunt)
+    '''
+    regexp = r'''(([a-zA-Z']+\s)+?expect(.*?)(the )*Spanish Inquisition(!|.))'''
+    
+    rcmp = re.compile(regexp)
+    se = rcmp.search(text)
+    dl = objectify(text, rcmp)
+    
+    print ''.join([str(n) for n in dl])
 
         
         
