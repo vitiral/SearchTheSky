@@ -7,5 +7,5 @@ Created on Fri Aug 31 19:48:11 2012
 
 if __name__ == '__main__':
     import os
-    print os.system("pyuic4 regui_ui.ui > regui_ui.py")
+    print os.system("pyuic4 sky_ui.ui > sky_ui.py")
 print 'done'
