@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'sky_ui.ui'
 #
-# Created: Wed Oct  9 22:47:53 2013
+# Created: Thu Oct 10 00:46:29 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -14,18 +14,19 @@ try:
 except AttributeError:
     _fromUtf8 = lambda s: s
 
-class Ui_MainWindow(object):
-    def setupUi(self, MainWindow):
-        MainWindow.setObjectName(_fromUtf8("MainWindow"))
-        MainWindow.resize(442, 399)
+class Ui_SearchTheSky_window(object):
+    def setupUi(self, SearchTheSky_window):
+        SearchTheSky_window.setObjectName(_fromUtf8("SearchTheSky_window"))
+        SearchTheSky_window.resize(442, 399)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(MainWindow.sizePolicy().hasHeightForWidth())
-        MainWindow.setSizePolicy(sizePolicy)
-        self.centralwidget = QtGui.QWidget(MainWindow)
+        sizePolicy.setHeightForWidth(SearchTheSky_window.sizePolicy().hasHeightForWidth())
+        SearchTheSky_window.setSizePolicy(sizePolicy)
+        self.centralwidget = QtGui.QWidget(SearchTheSky_window)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         self.tabWidget_lower = QtGui.QTabWidget(self.centralwidget)
+        self.tabWidget_lower.setEnabled(True)
         self.tabWidget_lower.setGeometry(QtCore.QRect(0, 83, 441, 271))
         self.tabWidget_lower.setObjectName(_fromUtf8("tabWidget_lower"))
         self.tab_files = QtGui.QWidget()
@@ -65,9 +66,9 @@ class Ui_MainWindow(object):
         self.tabWidget_lower.addTab(self.tab_files, _fromUtf8(""))
         self.tab_text = QtGui.QWidget()
         self.tab_text.setObjectName(_fromUtf8("tab_text"))
-        self.textEdit = QtGui.QTextEdit(self.tab_text)
-        self.textEdit.setGeometry(QtCore.QRect(0, 30, 431, 211))
-        self.textEdit.setObjectName(_fromUtf8("textEdit"))
+        self.textEdit_input = QtGui.QTextEdit(self.tab_text)
+        self.textEdit_input.setGeometry(QtCore.QRect(0, 30, 431, 211))
+        self.textEdit_input.setObjectName(_fromUtf8("textEdit_input"))
         self.groupBox = QtGui.QGroupBox(self.tab_text)
         self.groupBox.setGeometry(QtCore.QRect(0, 0, 161, 31))
         self.groupBox.setObjectName(_fromUtf8("groupBox"))
@@ -121,26 +122,26 @@ class Ui_MainWindow(object):
         self.label__main_bottom.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.label__main_bottom.setObjectName(_fromUtf8("label__main_bottom"))
         self.tabWidget_upper.addTab(self.tab, _fromUtf8(""))
-        MainWindow.setCentralWidget(self.centralwidget)
-        self.menubar = QtGui.QMenuBar(MainWindow)
+        SearchTheSky_window.setCentralWidget(self.centralwidget)
+        self.menubar = QtGui.QMenuBar(SearchTheSky_window)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 442, 20))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         self.menuOptions = QtGui.QMenu(self.menubar)
         self.menuOptions.setObjectName(_fromUtf8("menuOptions"))
         self.menuMode = QtGui.QMenu(self.menuOptions)
         self.menuMode.setObjectName(_fromUtf8("menuMode"))
-        MainWindow.setMenuBar(self.menubar)
-        self.statusbar = QtGui.QStatusBar(MainWindow)
+        SearchTheSky_window.setMenuBar(self.menubar)
+        self.statusbar = QtGui.QStatusBar(SearchTheSky_window)
         self.statusbar.setObjectName(_fromUtf8("statusbar"))
-        MainWindow.setStatusBar(self.statusbar)
-        self.menu_quick_search = QtGui.QAction(MainWindow)
+        SearchTheSky_window.setStatusBar(self.statusbar)
+        self.menu_quick_search = QtGui.QAction(SearchTheSky_window)
         self.menu_quick_search.setCheckable(False)
         self.menu_quick_search.setChecked(False)
         self.menu_quick_search.setEnabled(False)
         self.menu_quick_search.setObjectName(_fromUtf8("menu_quick_search"))
-        self.actionRegexp_P_ython_erl = QtGui.QAction(MainWindow)
+        self.actionRegexp_P_ython_erl = QtGui.QAction(SearchTheSky_window)
         self.actionRegexp_P_ython_erl.setObjectName(_fromUtf8("actionRegexp_P_ython_erl"))
-        self.actionPy_refactor = QtGui.QAction(MainWindow)
+        self.actionPy_refactor = QtGui.QAction(SearchTheSky_window)
         self.actionPy_refactor.setEnabled(False)
         self.actionPy_refactor.setObjectName(_fromUtf8("actionPy_refactor"))
         self.menuMode.addAction(self.actionRegexp_P_ython_erl)
@@ -149,22 +150,22 @@ class Ui_MainWindow(object):
         self.menuOptions.addAction(self.menuMode.menuAction())
         self.menubar.addAction(self.menuOptions.menuAction())
 
-        self.retranslateUi(MainWindow)
-        self.tabWidget_lower.setCurrentIndex(0)
+        self.retranslateUi(SearchTheSky_window)
+        self.tabWidget_lower.setCurrentIndex(1)
         self.tabWidget_upper.setCurrentIndex(0)
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(SearchTheSky_window)
 
-    def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_2.setTitle(QtGui.QApplication.translate("MainWindow", "Folder", None, QtGui.QApplication.UnicodeUTF8))
-        self.pushButton_find.setText(QtGui.QApplication.translate("MainWindow", "Find", None, QtGui.QApplication.UnicodeUTF8))
-        self.toolButton_folder.setText(QtGui.QApplication.translate("MainWindow", "...", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_4.setTitle(QtGui.QApplication.translate("MainWindow", "Display", None, QtGui.QApplication.UnicodeUTF8))
-        self.radioButton_files_match.setText(QtGui.QApplication.translate("MainWindow", "Match", None, QtGui.QApplication.UnicodeUTF8))
-        self.radioButton_files_replace.setText(QtGui.QApplication.translate("MainWindow", "Replace", None, QtGui.QApplication.UnicodeUTF8))
-        self.pushButton_replace_all.setText(QtGui.QApplication.translate("MainWindow", "Replace All", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget_lower.setTabText(self.tabWidget_lower.indexOf(self.tab_files), QtGui.QApplication.translate("MainWindow", "Files", None, QtGui.QApplication.UnicodeUTF8))
-        self.textEdit.setHtml(QtGui.QApplication.translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+    def retranslateUi(self, SearchTheSky_window):
+        SearchTheSky_window.setWindowTitle(QtGui.QApplication.translate("SearchTheSky_window", "Search The Sky", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_2.setTitle(QtGui.QApplication.translate("SearchTheSky_window", "Folder", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_find.setText(QtGui.QApplication.translate("SearchTheSky_window", "Find", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_folder.setText(QtGui.QApplication.translate("SearchTheSky_window", "...", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_4.setTitle(QtGui.QApplication.translate("SearchTheSky_window", "Display", None, QtGui.QApplication.UnicodeUTF8))
+        self.radioButton_files_match.setText(QtGui.QApplication.translate("SearchTheSky_window", "Match", None, QtGui.QApplication.UnicodeUTF8))
+        self.radioButton_files_replace.setText(QtGui.QApplication.translate("SearchTheSky_window", "Replace", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_replace_all.setText(QtGui.QApplication.translate("SearchTheSky_window", "Replace All", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget_lower.setTabText(self.tabWidget_lower.indexOf(self.tab_files), QtGui.QApplication.translate("SearchTheSky_window", "Files", None, QtGui.QApplication.UnicodeUTF8))
+        self.textEdit_input.setHtml(QtGui.QApplication.translate("SearchTheSky_window", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'Sans Serif\'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
@@ -173,23 +174,23 @@ class Ui_MainWindow(object):
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">    (JARRING CHORD - the cardinals burst in) </p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">    Ximinez: <span style=\" font-weight:600; text-decoration: underline; vertical-align:sub;\">2:</span><span style=\" font-weight:600; color:#b30000;\">(</span><span style=\" font-weight:600; color:#b3008d;\">(</span><span style=\" font-weight:600; color:#000000;\">NOBODY </span><span style=\" font-weight:600; color:#b3008d;\">)</span><span style=\" font-weight:600; color:#b3008d; vertical-align:sub;\">1</span><span style=\" font-weight:600; color:#000000;\">expect</span><span style=\" font-weight:600; color:#4b00b3;\">(</span><span style=\" font-weight:600; color:#000000;\">s </span><span style=\" font-weight:600; color:#4b00b3;\">)</span><span style=\" font-weight:600; color:#4b00b3; vertical-align:sub;\">2</span><span style=\" font-weight:600; color:#0041b3;\">(</span><span style=\" font-weight:600; color:#000000;\">the </span><span style=\" font-weight:600; color:#0041b3;\">)</span><span style=\" font-weight:600; color:#0041b3; vertical-align:sub;\">3</span><span style=\" font-weight:600; color:#000000;\">Spanish Inquisition</span><span style=\" font-weight:600; color:#00b398;\">(</span><span style=\" font-weight:600; color:#000000;\">!</span><span style=\" font-weight:600; color:#00b398;\">)</span><span style=\" font-weight:600; color:#00b398; vertical-align:sub;\">4</span><span style=\" font-weight:600; color:#b30000;\">)</span><span style=\" font-weight:600; color:#b30000; vertical-align:sub;\">0</span> Our chief weapon is surprise...surprise and fear...fear and surprise.... Our two weapons are fear and surprise...and ruthless efficiency.... Our *three* weapons are fear, surprise, and ruthless efficiency...and an almost fanatical devotion to the Pope.... Our *four*...no... *Amongst* our weapons.... Amongst our weaponry...are such elements as fear, surprise.... I\'ll come in again. (Exit and exeunt) </p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">    </p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox.setTitle(QtGui.QApplication.translate("MainWindow", "Display", None, QtGui.QApplication.UnicodeUTF8))
-        self.radioButton_text_match.setText(QtGui.QApplication.translate("MainWindow", "Match", None, QtGui.QApplication.UnicodeUTF8))
-        self.radioButton_text_replace.setText(QtGui.QApplication.translate("MainWindow", "Replace", None, QtGui.QApplication.UnicodeUTF8))
-        self.pushButton.setToolTip(QtGui.QApplication.translate("MainWindow", "Copy results to clipboard", None, QtGui.QApplication.UnicodeUTF8))
-        self.pushButton.setText(QtGui.QApplication.translate("MainWindow", "Copy", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget_lower.setTabText(self.tabWidget_lower.indexOf(self.tab_text), QtGui.QApplication.translate("MainWindow", "Text", None, QtGui.QApplication.UnicodeUTF8))
-        self.textBrowser_help.setDocumentTitle(QtGui.QApplication.translate("MainWindow", "Help", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget_lower.setTabText(self.tabWidget_lower.indexOf(self.tab_help), QtGui.QApplication.translate("MainWindow", "Help", None, QtGui.QApplication.UnicodeUTF8))
-        self.lineEdit_input.setText(QtGui.QApplication.translate("MainWindow", "([a-zA-Z\']+\\s)+?expect(.*?)(the )*Spanish Inquisition(!|.)", None, QtGui.QApplication.UnicodeUTF8))
-        self.lineEdit_replace.setText(QtGui.QApplication.translate("MainWindow", "What is this, the Spanish Inquisition?", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_main_top.setText(QtGui.QApplication.translate("MainWindow", "Reg Exp", None, QtGui.QApplication.UnicodeUTF8))
-        self.label__main_bottom.setText(QtGui.QApplication.translate("MainWindow", "Replace", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget_upper.setTabText(self.tabWidget_upper.indexOf(self.tab), QtGui.QApplication.translate("MainWindow", "Search", None, QtGui.QApplication.UnicodeUTF8))
-        self.menuOptions.setTitle(QtGui.QApplication.translate("MainWindow", "Options", None, QtGui.QApplication.UnicodeUTF8))
-        self.menuMode.setTitle(QtGui.QApplication.translate("MainWindow", "Mode", None, QtGui.QApplication.UnicodeUTF8))
-        self.menu_quick_search.setText(QtGui.QApplication.translate("MainWindow", "Quick Search", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionRegexp_P_ython_erl.setText(QtGui.QApplication.translate("MainWindow", "regexp P(erl|ython)", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionPy_refactor.setText(QtGui.QApplication.translate("MainWindow", "py refactor", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionPy_refactor.setToolTip(QtGui.QApplication.translate("MainWindow", "To Be Implemented!", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox.setTitle(QtGui.QApplication.translate("SearchTheSky_window", "Display", None, QtGui.QApplication.UnicodeUTF8))
+        self.radioButton_text_match.setText(QtGui.QApplication.translate("SearchTheSky_window", "Match", None, QtGui.QApplication.UnicodeUTF8))
+        self.radioButton_text_replace.setText(QtGui.QApplication.translate("SearchTheSky_window", "Replace", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton.setToolTip(QtGui.QApplication.translate("SearchTheSky_window", "Copy results to clipboard", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton.setText(QtGui.QApplication.translate("SearchTheSky_window", "Copy", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget_lower.setTabText(self.tabWidget_lower.indexOf(self.tab_text), QtGui.QApplication.translate("SearchTheSky_window", "Text", None, QtGui.QApplication.UnicodeUTF8))
+        self.textBrowser_help.setDocumentTitle(QtGui.QApplication.translate("SearchTheSky_window", "Help", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget_lower.setTabText(self.tabWidget_lower.indexOf(self.tab_help), QtGui.QApplication.translate("SearchTheSky_window", "Help", None, QtGui.QApplication.UnicodeUTF8))
+        self.lineEdit_input.setText(QtGui.QApplication.translate("SearchTheSky_window", "([a-zA-Z\']+\\s)+?expect(.*?)(the )*Spanish Inquisition(!|.)", None, QtGui.QApplication.UnicodeUTF8))
+        self.lineEdit_replace.setText(QtGui.QApplication.translate("SearchTheSky_window", "What is this, the Spanish Inquisition?", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_main_top.setText(QtGui.QApplication.translate("SearchTheSky_window", "Reg Exp", None, QtGui.QApplication.UnicodeUTF8))
+        self.label__main_bottom.setText(QtGui.QApplication.translate("SearchTheSky_window", "Replace", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget_upper.setTabText(self.tabWidget_upper.indexOf(self.tab), QtGui.QApplication.translate("SearchTheSky_window", "Search", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuOptions.setTitle(QtGui.QApplication.translate("SearchTheSky_window", "Options", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuMode.setTitle(QtGui.QApplication.translate("SearchTheSky_window", "Mode", None, QtGui.QApplication.UnicodeUTF8))
+        self.menu_quick_search.setText(QtGui.QApplication.translate("SearchTheSky_window", "Quick Search", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionRegexp_P_ython_erl.setText(QtGui.QApplication.translate("SearchTheSky_window", "regexp P(erl|ython)", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionPy_refactor.setText(QtGui.QApplication.translate("SearchTheSky_window", "py refactor", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionPy_refactor.setToolTip(QtGui.QApplication.translate("SearchTheSky_window", "To Be Implemented!", None, QtGui.QApplication.UnicodeUTF8))
 
