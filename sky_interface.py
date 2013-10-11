@@ -58,7 +58,6 @@ class UserInterface(object):
         self.ui.setupUi(self.main)
         ui = self.ui
         cu = ui.textEdit_input.textCursor()
-        pdb.set_trace() 
         QtGui.QTextCursor()
         QtGui.QTextCursor.SelectionType()
     
@@ -70,14 +69,11 @@ class UserInterface(object):
             self.LineEdits.input_changed)
         self.ui.lineEdit_replace.textEdited.connect(
             self.LineEdits.replace_changed)
-        QtCore.QObject.connect(self.ui.textEdit_input, 
-            QtCore.SIGNAL("selectionChanged()"), 
-            self.TextBoxes.input_selectionChanged)
+#        QtCore.QObject.connect(self.ui.textEdit_input, 
+#            QtCore.SIGNAL("selectionChanged()"), 
+#            self.TextBoxes.input_selectionChanged)
         self.ui.textEdit_input.connect(self.ui.textEdit_input, 
-            QtCore.SIGNAL("textChanged()"), self.TextBoxes.input_textChanged)
-    
-    def play(self):
-        pass
+            QtCore.SIGNAL("textChanged()"), self.TextBoxes.set_update)
     
 class Menus(object):
     def __init__(self, user):
@@ -157,49 +153,67 @@ Chapman: I didn't expect a kind of Spanish Inquisition.
 (JARRING CHORD - the cardinals burst in) 
 Ximinez: NOBODY expects the Spanish Inquisition! Our chief weapon is surprise...surprise and fear...fear and surprise.... Our two weapons are fear and surprise...and ruthless efficiency.... Our *three* weapons are fear, surprise, and ruthless efficiency...and an almost fanatical devotion to the Pope.... Our *four*...no... *Amongst* our weapons.... Amongst our weaponry...are such elements as fear, surprise.... I'll come in again. (Exit and exeunt) 
 '''
+        self.html_list = None
         self.last_update = 0
         self.update = True  # flag used to determine if update is necessary
         self.check_update()
     
     def check_update(self):
+        '''Does the match / replacement and updates the view in real time'''
         if self.update:
+            self.update = False
+            print 'Updating', time.time()
+            pdb.set_trace()
             if time.time() - self.last_update > self.UPDATE_PERIOD:
-                is_match = self.u.CheckBoxes.get_text_match()
+                cpos = self.get_text_cursor_pos()   # html position
+                checkbox_match = self.u.CheckBoxes.get_text_match()
                 researched = textools.re_search(self.u.LineEdits.get_input_text(),
                                                 self.input_original)
-                if is_match:
-                    text = rsearch_rtext.re_search_format_html(researched)
+                if checkbox_match:
+                    html_list = rsearch_rtext.re_search_format_html(researched)
                 else:
-                    text = rsearch_rtext.re_search_format_html(
+                    html_list = rsearch_rtext.re_search_format_html(
                         textools.re_search_replace(researched, 
-                        self.u.LineEdits.get_replace_text, preview = True))
-                self.set_html_input(text)
-                self.researched = researched
+                        self.u.LineEdits.get_replace_text, 
+                        preview = True))
+                self.set_html_input(rsearch_rtext.
+                    str_html_formatted(html_list))
+                if self.html_list:
+                    # note self.html_list is previous list
+                    cpos = rsearch_rtext.get_position(self.html_list,
+                            html_position = cpos)
+                    self.set_text_cursor_pos(rsearch_rtext.get_position(
+                        text_position = cpos))
+                self.html_list = html_list
         self.last_update = time.time()
-        self.update = False
+        
     
+    # text cursor functions
     def get_text_cursor(self):
         return self.text_input.textCursor()
-    
+    def set_text_cursor_pos(self, value):
+        return self.text_input.textCursor.setPosition(value)
+    def get_text_cursor_pos(self):
+        return self.get_text_cursor().position()
     def get_text_selection(self):
         cursor = self.get_text_cursor()
         return cursor.selectionStart(), cursor.selectionEnd()
     
-    def set_text_cursor(self, value):
-        return self.text_input.textCursor.setPosition(value)
-    
+    # Reading text functions
     def get_text_input(self):
         return str(self.ui.textEdit_input.toPlainText())
     
+    # seting text functions
     def set_html_input(self, html):
         self.ui.textEdit_input.setHtml(html)
-    
     def set_plain_input(self, text):
         self.ui.textEdit_input.setText(text)
     
+    # signals
+    def set_update(self):
+        self.update = True
     def input_selectionChanged(self):
         print 'clicked', time.time()
-    
     def input_textChanged(self):
         print 'edited', time.time()
         self.update = True
