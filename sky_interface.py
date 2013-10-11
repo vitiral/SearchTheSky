@@ -23,7 +23,7 @@ from PyQt4.QtCore import pyqtRemoveInputHook
 import sky_ui
 
 from cloudtb import textools
-from cloudtb.extra import richtext
+from cloudtb.extra import researched_richtext as rsearch_rtext
 from cloudtb import dbe
 
 class SearchTheSky(QtGui.QMainWindow):
@@ -57,7 +57,11 @@ class UserInterface(object):
         self.ui = sky_ui.Ui_SearchTheSky_window()
         self.ui.setupUi(self.main)
         ui = self.ui
-        pdb.set_trace()        
+        cu = ui.textEdit_input.textCursor()
+        pdb.set_trace() 
+        QtGui.QTextCursor()
+        QtGui.QTextCursor.SelectionType()
+    
         self.main.setWindowTitle("Search The Sky")
         self.ui.tabWidget_lower.setCurrentIndex(1)
     
@@ -67,12 +71,10 @@ class UserInterface(object):
         self.ui.lineEdit_replace.textEdited.connect(
             self.LineEdits.replace_changed)
         QtCore.QObject.connect(self.ui.textEdit_input, 
-            QtCore.SIGNAL("selectionChanged()"), self.TextBoxes.input_clicked)
+            QtCore.SIGNAL("selectionChanged()"), 
+            self.TextBoxes.input_selectionChanged)
         self.ui.textEdit_input.connect(self.ui.textEdit_input, 
-            QtCore.SIGNAL("textChanged()"), self.TextBoxes.input_edited)
-        self.ui.textEdit_input.connect(self.ui.textEdit_input, 
-            QtCore.SIGNAL("enterEvent(QEvent)"), self.TextBoxes.event)
-#        self.ui.textEdit_input
+            QtCore.SIGNAL("textChanged()"), self.TextBoxes.input_textChanged)
     
     def play(self):
         pass
@@ -138,11 +140,16 @@ class LineEdits(object):
         return str(self.ui.lineEdit_replace.text())
 
 class TextBoxes(object):
-    UPDATE_PERIOD = 0.5
+    UPDATE_PERIOD = 0.6
+    ''''
+    'selectedText'
+    'selectedText', 'select', 'selectedTableCells', 'selectedText', 'selection', 'selectionEnd',
+    'selectionStart', 'setBlockCharFormat', 'setBlockFormat', 'setCharFormat', 
+    'setKeepPositionOnInsert', 'setPosition','''
     def __init__(self, user):
         self.u = user
         self.ui = user.ui
-        self.last_update = time.time() - 1000
+        
         self.text_input = self.ui.textEdit_input
         self.text_files = self.ui.textBrowser_files
         self.input_original = '''Monty Python skit talking about expecting the Spanish Inquisition in the text below: 
@@ -150,23 +157,36 @@ Chapman: I didn't expect a kind of Spanish Inquisition.
 (JARRING CHORD - the cardinals burst in) 
 Ximinez: NOBODY expects the Spanish Inquisition! Our chief weapon is surprise...surprise and fear...fear and surprise.... Our two weapons are fear and surprise...and ruthless efficiency.... Our *three* weapons are fear, surprise, and ruthless efficiency...and an almost fanatical devotion to the Pope.... Our *four*...no... *Amongst* our weapons.... Amongst our weaponry...are such elements as fear, surprise.... I'll come in again. (Exit and exeunt) 
 '''
+        self.last_update = 0
         self.update = True  # flag used to determine if update is necessary
+        self.check_update()
     
     def check_update(self):
         if self.update:
-            if time.time() - self.last_update < self.UPDATE_PERIOD:
+            if time.time() - self.last_update > self.UPDATE_PERIOD:
                 is_match = self.u.CheckBoxes.get_text_match()
                 researched = textools.re_search(self.u.LineEdits.get_input_text(),
                                                 self.input_original)
                 if is_match:
-                    text = richtext.re_search_format_html(researched)
+                    text = rsearch_rtext.re_search_format_html(researched)
                 else:
-                    text = richtext.re_search_format_html(
+                    text = rsearch_rtext.re_search_format_html(
                         textools.re_search_replace(researched, 
                         self.u.LineEdits.get_replace_text, preview = True))
                 self.set_html_input(text)
+                self.researched = researched
         self.last_update = time.time()
         self.update = False
+    
+    def get_text_cursor(self):
+        return self.text_input.textCursor()
+    
+    def get_text_selection(self):
+        cursor = self.get_text_cursor()
+        return cursor.selectionStart(), cursor.selectionEnd()
+    
+    def set_text_cursor(self, value):
+        return self.text_input.textCursor.setPosition(value)
     
     def get_text_input(self):
         return str(self.ui.textEdit_input.toPlainText())
@@ -177,11 +197,12 @@ Ximinez: NOBODY expects the Spanish Inquisition! Our chief weapon is surprise...
     def set_plain_input(self, text):
         self.ui.textEdit_input.setText(text)
     
-    def input_clicked(self):
+    def input_selectionChanged(self):
         print 'clicked', time.time()
     
-    def input_edited(self):
+    def input_textChanged(self):
         print 'edited', time.time()
+        self.update = True
     
     def event(self, *args, **kwargs):
         pdb.set_trace()
