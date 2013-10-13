@@ -27,7 +27,7 @@ class ui_CentralWidget(QtGui.QWidget):
         
         self.createTabRegexp()
         
-        self.tab_regexp.activate(self.tabs_lower)
+        self.tab_regexp.activateTabs(self.tabs_lower)
         
     def setupTabWidgets(self):
         # Set all possible upper tabs to None
@@ -51,7 +51,7 @@ class ui_CentralWidget(QtGui.QWidget):
         
     def createTabRegexp(self):
         assert(self.tab_regexp == None)
-        self.tab_regexp = ui_RegexpTab()
+        self.tab_regexp = ui_Regexp(add_sub_tab = self.tabs_lower.addTab)
         self.tabs_upper.addTab(self.tab_regexp, "Reg Exp")
         self.tab_regexp.setEnabled(True)
 
@@ -73,9 +73,9 @@ def get_match_replace_radiobox(parent):
 #==============================================================================
 # Standard Object Bases
 #==============================================================================
-class ui_StdTab(QtGui.QWidget):
+class StdWidget(QtGui.QWidget):
     def __init__(self, parent=None):
-        super(ui_StdTab, self).__init__(parent)
+        super(StdWidget, self).__init__(parent)
 
     def save_settings(self):
         print type(self), ': No save settings routine'
@@ -85,13 +85,19 @@ class ui_StdTab(QtGui.QWidget):
     
     
 #==============================================================================
-# Regular Expression Tab
+# Regular Expressions
 #==============================================================================
-class ui_RegexpTab(ui_StdTab):
-    def __init__(self, parent=None):
-        super(ui_RegexpTab, self).__init__(parent)
-        self.setupUi()
+class ui_Regexp(StdWidget):
+    def __init__(self, parent=None, add_sub_tab = None):
+        super(ui_Regexp, self).__init__(parent)
         self._tabs_created = False
+        self.add_sub_tab = add_sub_tab
+        
+        self.setupUi()
+        if add_sub_tab:
+            self.setupTabs()
+        else:
+            self.setupWidget()
     
     def setupUi(self):
         vbox = QtGui.QVBoxLayout()
@@ -113,49 +119,53 @@ class ui_RegexpTab(ui_StdTab):
         vbox.addLayout(hbox_bot)
         
         self.setLayout(vbox)
+        self._vbox = vbox
+        
+        # Folder is left floating to be in either the main Widget
+        # or a sub tab
+        self.Folder = ui_RexpFiles_Folder()
     
-    def createTabs(self):
-        self.Tab_files = ui_RexpFilesTab()
+    def setupWidget(self):
+        self._vbox.addWidget(self.Folder)
+    
+    def setupTabs(self):
+        self.Tab_files = ui_RexpFilesTab(self.Folder)
         self.Tab_text = ui_RexpTextTab()
         self._tabs_created = True
     
-    def activate(self, tabs_lower):
+    def activateTabs(self, tabs_lower):
         '''This gets called when the tab gets activated'''
         if not self._tabs_created:
-            self.createTabs()
+            self.setupTabs()
             
-        tabs_lower = tabs_lower
-        tabs_lower.addTab(self.Tab_files, "Files")
-        tabs_lower.addTab(self.Tab_text, "Text")
-        
-class ui_RexpFilesTab(ui_StdTab):
+        self.add_sub_tab(self.Tab_files, "Files")
+        self.add_sub_tab(self.Tab_text, "Text")
+
+class ui_RexpFiles_Folder(StdWidget):
     def __init__(self, parent=None):
-        super(ui_RexpFilesTab, self).__init__(parent)
+        super(ui_RexpFiles_Folder, self).__init__(parent)
         self.setupUi()
     
     def setupUi(self):
-        vbox_main = QtGui.QVBoxLayout()
-        
-        # # # Folder Line
-        hbox_folder = QtGui.QHBoxLayout()
+        h_box = QtGui.QHBoxLayout()
 
         But_folder = QtGui.QToolButton()
         But_folder.setText('  ...  ')
-        hbox_folder.addWidget(But_folder)
+        h_box.addWidget(But_folder)
         self.But_folder = But_folder
         
         Ledit_folder = QtGui.QLineEdit()
-        hbox_folder.addWidget(Ledit_folder)
+        h_box.addWidget(Ledit_folder)
         self.Ledit_folder = Ledit_folder
 
         But_find = QtGui.QPushButton(" Find ")
         But_find.setToolTip("Search Folder for Regular Expression")
-        hbox_folder.addWidget(But_find)
+        h_box.addWidget(But_find)
         self.But_find = But_find
         
         CBox_recurse = QtGui.QCheckBox("Recursive")
         CBox_recurse.setToolTip("Look through folders recursively")
-        hbox_folder.addWidget(CBox_recurse)
+        h_box.addWidget(CBox_recurse)
         self.CBox_recurse = CBox_recurse        
         
         Ledit_recurse = QtGui.QLineEdit()
@@ -163,15 +173,30 @@ class ui_RexpFilesTab(ui_StdTab):
         width = 50
         Ledit_recurse.setMaximumWidth(width)
         Ledit_recurse.setMinimumWidth(width)
-        hbox_folder.addWidget(Ledit_recurse)
+        h_box.addWidget(Ledit_recurse)
         self.Ledit_recurse = Ledit_recurse
-        vbox_main.addLayout(hbox_folder)
+        
+        self.setLayout(h_box)
+        
+class ui_RexpFilesTab(StdWidget):
+    def __init__(self, Folder, parent=None, create_child_tab = None):
+        super(ui_RexpFilesTab, self).__init__(parent)
+        self.Folder = Folder
+        self.setupUi()
+    
+    def setupUi(self):
+        vbox_main = QtGui.QVBoxLayout()
+        
+        # # # Folder Line
+        vbox_main.addWidget(self.Folder)
+        
         # TODO: Want to be able to have user change sizes of the left/right
         
         # # # Bottom
         hbox_bottom = QtGui.QHBoxLayout()
         
         Tree_folder = QtGui.QTreeView()
+        grip = QtGui.QSizeGrip(Tree_folder)
         hbox_bottom.addWidget(Tree_folder)
         self.Tree_folder = Tree_folder
         
@@ -195,6 +220,8 @@ class ui_RexpFilesTab(ui_StdTab):
         
         # Bottom
         Browser_file = QtGui.QTextBrowser()
+        
+        grip = QtGui.QSizeGrip(Browser_file)
         self.Browser_file = Browser_file
         
         vbox_b_right.addWidget(Browser_file)
@@ -206,7 +233,7 @@ class ui_RexpFilesTab(ui_StdTab):
         
         self.setLayout(vbox_main)
 
-class ui_RexpTextTab(ui_StdTab):
+class ui_RexpTextTab(StdWidget):
     def __init__(self, parent=None):
         super(ui_RexpTextTab, self).__init__(parent)
         self.setupUi()
