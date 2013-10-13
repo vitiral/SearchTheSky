@@ -40,14 +40,46 @@ def get_match_replace_radiobox(parent):
 #==============================================================================
 # Standard Object Bases
 #==============================================================================
+
+# settings are stored in a dictionary named std_settings, they are 
+#  {'Get Setting Exec ({n})', 'Set Setting Exec({n})') : 
+#         ('GetInput', 'SetInput')}
+#  Where {0} should be formatted with the value given by the settings dict
+#  A default setting == None indicates that something special has to be
+#  done
+#   Everything put into settings MUST BE PICKLEABLE
+
 class StdWidget(QtGui.QWidget):
     def __init__(self, parent=None):
         super(StdWidget, self).__init__(parent)
 
-    def save_settings(self, settings):
-        return settings[self._NAME_]
-    
-    def load_settings(self, settings):
+    def save_settings(self):
+        '''returns the name and current settings dict to be saved
+        by the application
+        
+        This function is to-be extended by the parent class. It returns
+        a dict of settings that have been gotten and a dict of
+        settings that still need to be gotten.
+        '''
+        return_settings = {}
+        need_settings = {}
+        # save settings that can be proccessed.
+        for key, value in self.std_settings.iteritems():
+            getexec, setexec = key
+            getval, setval = value
+            if getval == None:
+                need_settings[getexec] = getval
+            else:
+                return_settings[getexec] = eval(getexec.format('self'))
+        return return_settings
+        
+    def load_settings(self, appliation_settings):
+        '''Load settings given the previous settings from the 
+        application settings
+        
+        This function needs to be extended (unless settings is an
+        empty dict)'''
+        settings = application_settings[self._NAME_]
         std_settings = self.std_settings
         # remove unrecognized settings
         for n in tuple(settings.keys()):
@@ -59,22 +91,37 @@ class StdWidget(QtGui.QWidget):
             if n not in settings:
                 settings[n] = std_settings[n]
         
-        # return settings -- to be used in parent
-        return settings
+        need_settings = {}
+        # process settings that can be processed
+        for key, item in tuple(settings.keys()):
+            getexec, setexec = key
+            getval, setval = item
+
+            if setval == None:
+                need_settings[setexec] = setval
+            else:
+                exec(setexec.format(n=default))
+            
+        # return settings that still need to be loaded in -- 
+        #  to be used in parent
+        return need_settings
     
 #==============================================================================
 # Regular Expressions
 #==============================================================================
+
 class ui_Regexp(StdWidget):
     
     std_settings = {
-        'Ledit_regexp.setText': (r'''([a-zA-Z']+\s)+?expect(.*?)(the )*Spanish '''
-                        r'''Inquisition(!|.)'''),
-
-        'Ledit_replace.setText': (''' What is this, the Spanish '''
-                '''Inquisition? '''),
-                
-        'Tab_text.TextEdit.setText': (
+        ('str(self.Ledit_regexp.text())' , 'self.Ledit_regexp.setText({n}'): (
+             ('', r'''([a-zA-Z']+\s)+?expect(.*?)(the )*Spanish '''
+                        r'''Inquisition(!|.)''')),
+        
+        ('str(self.Ledit_replace.text())', 'self.Ledit_replace.setText({n})'):(
+             ('', ''' What is this, the Spanish Inquisition? ''')),
+        
+        ('str(self.Tab_text.TextEdit.toPlainText())',
+            'self.Tab_text.TextEdit.setText({n})') : ('', 
         '''talking about expecting the Spanish Inquisition in the '''
         '''text below:\n''' 
         '''Chapman: I didn't expect a kind of Spanish Inquisition.\n''' 
@@ -88,11 +135,15 @@ class ui_Regexp(StdWidget):
         '''our weaponry... are such elements as fear, surprise.... I'll '''
         '''come in again. (Exit and exeunt)\n'''), 
         
-        'Folder.Ledit_folder.setText' : None,        # None signifies that something special needs to happen
-        'Folder.CBox_recurse.setChecked': True,
-        'Folder.Ledit_recurse.setText': '',
+        ('str(self.Folder.Ledit_folder.text())', 
+            'Folder.Ledit_folder.setText({n})') : ('', ''),        
+        
+        ('self.Folder.CBox_recurse.isChecked()', 
+            'self.Folder.CBox_recurse.setChecked({n})' ): ('', True),
+        
+        ('self.Folder.Ledit_recurse.text()',
+            'self.Folder.Ledit_recurse.setText({n})') : ('', ''),
     }
-    
     
     def __init__(self, parent=None, add_sub_tab = None):
         super(ui_Regexp, self).__init__(parent)
@@ -316,7 +367,8 @@ class RegExp(ui_Regexp):
     
         for key, item in settings.iteritems():
             if item != None:
-                to_exec = 'self.{0}({1})'.format(key, item)
+                
+                to_exec = '{0}({1})'.format(key, item)
                 exec(to_exec)
             elif key == 'Folder.Ledit_folder.setText':
                 Folder.Ledit_folder.setText(self.parent.get_home_directory())
