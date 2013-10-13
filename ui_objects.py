@@ -2,6 +2,17 @@
 #    Special Thanks to the tutorial found at
 #    <http://zetcode.com/tutorials/pyqt4/>
 
+
+'''
+Further work requires me to figure out how I am going to handle saving settings.
+What I would like is for every object that I need to save settings for just
+be a "view" of a dictionary (or something) that I can just pickle. Is this
+possible / easy?
+
+
+
+'''
+
 import pdb
 import sys
 
@@ -11,50 +22,6 @@ try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
     _fromUtf8 = lambda s: s
-
-class ui_SearchTheSky(QtGui.QMainWindow):
-    def __init__(self, parent=None):
-        super(ui_SearchTheSky, self).__init__(parent)
-        self.ui = ui_CentralWidget()
-        self.setCentralWidget(self.ui)
-        self.resize(450, 400)
-        self.show()
-        
-class ui_CentralWidget(QtGui.QWidget):
-    def __init__(self, parent=None):
-        super(ui_CentralWidget, self).__init__(parent)
-        self.setupTabWidgets()
-        
-        self.createTabRegexp()
-        
-        self.tab_regexp.activateTabs(self.tabs_lower)
-        
-    def setupTabWidgets(self):
-        # Set all possible upper tabs to None
-        self.tab_regexp = None
-        tabs_upper = QtGui.QTabWidget()
-        tabs_lower =  QtGui.QTabWidget()
-        tabs_upper.setFixedHeight(90)
-        
-        vbox = QtGui.QVBoxLayout()
-        vbox.addWidget(tabs_upper)
-        vbox.addWidget(tabs_lower)
-        
-        self.setLayout(vbox)
-        self._layout = vbox
-        self.tabs_upper = tabs_upper
-        self.tabs_lower = tabs_lower
-        
-        # TODO: how to hide / remove tabs
-        # clear seems to work -- and it forces me to integrate
-        # saving settings early on.
-        
-    def createTabRegexp(self):
-        assert(self.tab_regexp == None)
-        self.tab_regexp = ui_Regexp(add_sub_tab = self.tabs_lower.addTab)
-        self.tabs_upper.addTab(self.tab_regexp, "Reg Exp")
-        self.tab_regexp.setEnabled(True)
-
 
 #==============================================================================
 # Constructor Functions
@@ -77,27 +44,61 @@ class StdWidget(QtGui.QWidget):
     def __init__(self, parent=None):
         super(StdWidget, self).__init__(parent)
 
-    def save_settings(self):
-        print type(self), ': No save settings routine'
+    def save_settings(self, settings):
+        return settings[self._NAME_]
     
-    def load_settings(self):
-        print type(self), ': No load settings routine'
-    
+    def load_settings(self, settings):
+        std_settings = self.std_settings
+        # remove unrecognized settings
+        for n in tuple(settings.keys()):
+            if n not in std_settings:
+                del settings[n]
+            
+        # add settings not specified
+        for n in std_settings.iterkeys():
+            if n not in settings:
+                settings[n] = std_settings[n]
+        
+        # return settings -- to be used in parent
+        return settings
     
 #==============================================================================
 # Regular Expressions
 #==============================================================================
 class ui_Regexp(StdWidget):
+    
+    std_settings = {
+        'Ledit_regexp.setText': (r'''([a-zA-Z']+\s)+?expect(.*?)(the )*Spanish '''
+                        r'''Inquisition(!|.)'''),
+
+        'Ledit_replace.setText': (''' What is this, the Spanish '''
+                '''Inquisition? '''),
+                
+        'Tab_text.TextEdit.setText': (
+        '''talking about expecting the Spanish Inquisition in the '''
+        '''text below:\n''' 
+        '''Chapman: I didn't expect a kind of Spanish Inquisition.\n''' 
+        '''(JARRING CHORD - the cardinals burst in) \n'''
+        '''Ximinez: NOBODY expects the Spanish Inquisition! Our chief '''
+        '''weapon is surprise...surprise and fear...fear and surprise.... '''
+        '''Our two weapons are fear and surprise...and ruthless '''
+        '''efficiency.... Our *three* weapons are fear, surprise, and '''
+        '''ruthless efficiency...and an almost fanatical devotion to the '''
+        '''Pope.... Our *four*...no... *Amongst* our weapons.... Amongst '''
+        '''our weaponry... are such elements as fear, surprise.... I'll '''
+        '''come in again. (Exit and exeunt)\n'''), 
+        
+        'Folder.Ledit_folder.setText' : None,        # None signifies that something special needs to happen
+        'Folder.CBox_recurse.setChecked': True,
+        'Folder.Ledit_recurse.setText': '',
+    }
+    
+    
     def __init__(self, parent=None, add_sub_tab = None):
         super(ui_Regexp, self).__init__(parent)
         self._tabs_created = False
         self.add_sub_tab = add_sub_tab
-        
         self.setupUi()
-        if add_sub_tab:
-            self.setupTabs()
-        else:
-            self.setupWidget()
     
     def setupUi(self):
         vbox = QtGui.QVBoxLayout()
@@ -132,16 +133,8 @@ class ui_Regexp(StdWidget):
         self.Tab_files = ui_RexpFilesTab(self.Folder)
         self.Tab_text = ui_RexpTextTab()
         self._tabs_created = True
-    
-    def activateTabs(self, tabs_lower):
-        '''This gets called when the tab gets activated'''
-        if not self._tabs_created:
-            self.setupTabs()
-            
-        self.add_sub_tab(self.Tab_files, "Files")
-        self.add_sub_tab(self.Tab_text, "Text")
 
-class ui_RexpFiles_Folder(StdWidget):
+class ui_RexpFiles_Folder(QtGui.QWidget):
     def __init__(self, parent=None):
         super(ui_RexpFiles_Folder, self).__init__(parent)
         self.setupUi()
@@ -167,7 +160,7 @@ class ui_RexpFiles_Folder(StdWidget):
         CBox_recurse.setToolTip("Look through folders recursively")
         h_box.addWidget(CBox_recurse)
         self.CBox_recurse = CBox_recurse        
-        
+
         Ledit_recurse = QtGui.QLineEdit()
         Ledit_recurse.setToolTip("Depth of Recursion")
         width = 50
@@ -178,7 +171,7 @@ class ui_RexpFiles_Folder(StdWidget):
         
         self.setLayout(h_box)
         
-class ui_RexpFilesTab(StdWidget):
+class ui_RexpFilesTab(QtGui.QWidget):
     def __init__(self, Folder, parent=None, create_child_tab = None):
         super(ui_RexpFilesTab, self).__init__(parent)
         self.Folder = Folder
@@ -233,7 +226,7 @@ class ui_RexpFilesTab(StdWidget):
         
         self.setLayout(vbox_main)
 
-class ui_RexpTextTab(StdWidget):
+class ui_RexpTextTab(QtGui.QWidget):
     def __init__(self, parent=None):
         super(ui_RexpTextTab, self).__init__(parent)
         self.setupUi()
@@ -259,9 +252,90 @@ class ui_RexpTextTab(StdWidget):
         
         self.setLayout(vbox)
 
+
+#==============================================================================
+# Top Level Classes
+#==============================================================================
+class SearchTheSky(QtGui.QMainWindow):
+    def __init__(self, parent=None):
+        super(SearchTheSky, self).__init__(parent)
+        self.tabs = TabCentralWidget()
+        self.setCentralWidget(self.tabs)
+        self.resize(450, 400)
+        self.show()
+        
+class TabCentralWidget(QtGui.QWidget):
+    def __init__(self, parent=None):
+        super(TabCentralWidget, self).__init__(parent)
+        self.setupTabWidgets()
+        
+        self.createTabRegexp()
+        self.tab_regexp.activateTabs(self.tabs_lower)
+        
+    def setupTabWidgets(self):
+        # Set all possible upper tabs to None
+        self.tab_regexp = None
+        tabs_upper = QtGui.QTabWidget()
+        tabs_lower =  QtGui.QTabWidget()
+        tabs_upper.setFixedHeight(90)
+        
+        vbox = QtGui.QVBoxLayout()
+        vbox.addWidget(tabs_upper)
+        vbox.addWidget(tabs_lower)
+        
+        self.setLayout(vbox)
+        self._layout = vbox
+        self.tabs_upper = tabs_upper
+        self.tabs_lower = tabs_lower
+        
+        # TODO: how to hide / remove tabs
+        # clear seems to work -- and it forces me to integrate
+        # saving settings early on.
+    
+    def createTabRegexp(self):
+        assert(self.tab_regexp == None)
+        self.tab_regexp = RegExp(add_sub_tab = self.tabs_lower.addTab)
+        self.tabs_upper.addTab(self.tab_regexp, "Reg Exp")
+        self.tab_regexp.setEnabled(True)
+
+class RegExp(ui_Regexp):
+    _NAME_ = 'REG_EXP'
+    def __init__(self, parent = None, add_sub_tab = None):
+        ui_Regexp.__init__(self, parent)
+        self.parent = parent
+        self.add_sub_tab = add_sub_tab
+        
+        if add_sub_tab:
+            self.setupTabs()
+        else:
+            self.setupWidget()
+    
+    def load_settings(self, settings):
+        settings = ui_Regexp.load_settings(settings)
+#        ['Folder.CBox_recurse.setChecked', , 'Folder.Ledit_recurse.setText', 'Tab_text.TextEdit.setText', 'Ledit_regexp.setText', 'Ledit_replace.setText']
+    
+        for key, item in settings.iteritems():
+            if item != None:
+                to_exec = 'self.{0}({1})'.format(key, item)
+                exec(to_exec)
+            elif key == 'Folder.Ledit_folder.setText':
+                Folder.Ledit_folder.setText(self.parent.get_home_directory())
+            
+    def save_settings(self, settings):
+        settings = ui_Regexp.load_settings(settings)
+    
+    def activateTabs(self, tabs_lower):
+        '''This gets called when the tab gets activated'''
+        if not self._tabs_created:
+            self.setupTabs()
+            
+        self.add_sub_tab(self.Tab_files, "Files")
+        self.add_sub_tab(self.Tab_text, "Text")
+    
+
 def main():
     app = QtGui.QApplication(sys.argv)
-    ex = ui_SearchTheSky()
+    ex = SearchTheSky()
     sys.exit(app.exec_())
 
 if __name__ == '__main__':
