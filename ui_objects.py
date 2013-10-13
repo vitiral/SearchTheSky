@@ -9,19 +9,17 @@ What I would like is for every object that I need to save settings for just
 be a "view" of a dictionary (or something) that I can just pickle. Is this
 possible / easy?
 
-
-
 '''
+
 
 import pdb
 import sys
 
 from PyQt4 import QtGui, QtCore
 
-try:
-    _fromUtf8 = QtCore.QString.fromUtf8
-except AttributeError:
-    _fromUtf8 = lambda s: s
+from cloudtb import logtools, dbe
+from logging import DEBUG, INFO, ERROR
+log = logtools.setup_logger(level = DEBUG)
 
 #==============================================================================
 # Constructor Functions
@@ -48,6 +46,9 @@ def get_match_replace_radiobox(parent):
 #  A default setting == None indicates that something special has to be
 #  done
 #   Everything put into settings MUST BE PICKLEABLE
+#   Also keep in mind that everything has to be it's representation, as
+#   Readable by a python interpreter. So SetInput should not be "hello world"
+#   but rather '"hello world"' or repr("hello world")
 
 class StdWidget(QtGui.QWidget):
     def __init__(self, parent=None):
@@ -60,6 +61,10 @@ class StdWidget(QtGui.QWidget):
         This function is to-be extended by the parent class. It returns
         a dict of settings that have been gotten and a dict of
         settings that still need to be gotten.
+        
+        All upper level functions should return the same thing -- the highest
+        level function does error checking by ensuring that bool(need_settings)
+            == False
         '''
         return_settings = {}
         need_settings = {}
@@ -71,36 +76,47 @@ class StdWidget(QtGui.QWidget):
                 need_settings[getexec] = getval
             else:
                 return_settings[getexec] = eval(getexec.format('self'))
-        return return_settings
+        return return_settings, need_settings
         
-    def load_settings(self, appliation_settings):
+    def load_settings(self, application_settings):
         '''Load settings given the previous settings from the 
         application settings
         
-        This function needs to be extended (unless settings is an
-        empty dict)'''
-        settings = application_settings[self._NAME_]
+        Returns the settings that still need to be loaded. All
+        implementations of this function should do the same (for error
+            checking at top level)
+        '''
+        try:
+            settings = application_settings[self._NAME_]
+        except KeyError:
+            settings = self.std_settings
         std_settings = self.std_settings
         # remove unrecognized settings
-        for n in tuple(settings.keys()):
-            if n not in std_settings:
-                del settings[n]
+        for key in tuple(settings.keys()):
+            if key not in std_settings:
+                del settings[key]
             
         # add settings not specified
-        for n in std_settings.iterkeys():
-            if n not in settings:
-                settings[n] = std_settings[n]
+        for key in std_settings.iterkeys():
+            if key not in settings:
+                settings[key] = std_settings[key]
         
         need_settings = {}
         # process settings that can be processed
-        for key, item in tuple(settings.keys()):
+        for key, item in settings.iteritems():
             getexec, setexec = key
             getval, setval = item
 
             if setval == None:
                 need_settings[setexec] = setval
             else:
-                exec(setexec.format(n=default))
+                try:
+                    exec(setexec.format(n=setval))
+                except SyntaxError as E:
+                    error = ("Syntax Error in loading: ", 
+                        setexec.format(n=setval))
+                    log(ERROR, error)
+                    raise E
             
         # return settings that still need to be loaded in -- 
         #  to be used in parent
@@ -111,18 +127,18 @@ class StdWidget(QtGui.QWidget):
 #==============================================================================
 
 class ui_Regexp(StdWidget):
-    
     std_settings = {
-        ('str(self.Ledit_regexp.text())' , 'self.Ledit_regexp.setText({n}'): (
-             ('', r'''([a-zA-Z']+\s)+?expect(.*?)(the )*Spanish '''
+        ('str(self.Ledit_regexp.text())' , 'self.Ledit_regexp.setText({n})'):(
+             '', repr(r'''([a-zA-Z']+\s)+?expect(.*?)(the )*Spanish '''
                         r'''Inquisition(!|.)''')),
         
-        ('str(self.Ledit_replace.text())', 'self.Ledit_replace.setText({n})'):(
-             ('', ''' What is this, the Spanish Inquisition? ''')),
+        ('str(self.Ledit_replace.text())', 
+             'self.Ledit_replace.setText({n})') : (
+             '', repr(''' What is this, the Spanish Inquisition? ''')),
         
         ('str(self.Tab_text.TextEdit.toPlainText())',
             'self.Tab_text.TextEdit.setText({n})') : ('', 
-        '''talking about expecting the Spanish Inquisition in the '''
+        repr('''talking about expecting the Spanish Inquisition in the '''
         '''text below:\n''' 
         '''Chapman: I didn't expect a kind of Spanish Inquisition.\n''' 
         '''(JARRING CHORD - the cardinals burst in) \n'''
@@ -133,16 +149,16 @@ class ui_Regexp(StdWidget):
         '''ruthless efficiency...and an almost fanatical devotion to the '''
         '''Pope.... Our *four*...no... *Amongst* our weapons.... Amongst '''
         '''our weaponry... are such elements as fear, surprise.... I'll '''
-        '''come in again. (Exit and exeunt)\n'''), 
+        '''come in again. (Exit and exeunt)\n''')), 
         
         ('str(self.Folder.Ledit_folder.text())', 
-            'Folder.Ledit_folder.setText({n})') : ('', ''),        
+            'self.Folder.Ledit_folder.setText({n})') : (repr(''), repr('')),        
         
         ('self.Folder.CBox_recurse.isChecked()', 
-            'self.Folder.CBox_recurse.setChecked({n})' ): ('', True),
+            'self.Folder.CBox_recurse.setChecked({n})' ): (repr(''), True),
         
         ('self.Folder.Ledit_recurse.text()',
-            'self.Folder.Ledit_recurse.setText({n})') : ('', ''),
+            'self.Folder.Ledit_recurse.setText({n})') : (repr(''), repr('')),
     }
     
     def __init__(self, parent=None, add_sub_tab = None):
@@ -310,10 +326,16 @@ class ui_RexpTextTab(QtGui.QWidget):
 class SearchTheSky(QtGui.QMainWindow):
     def __init__(self, parent=None):
         super(SearchTheSky, self).__init__(parent)
-        self.tabs = TabCentralWidget()
-        self.setCentralWidget(self.tabs)
+        self.Tabs = TabCentralWidget()
+        self.setCentralWidget(self.Tabs)
         self.resize(450, 400)
         self.show()
+        
+        self.load_settings()
+    
+    def load_settings(self):
+        settings = {}
+        self.Tabs.load_settings(settings)
         
 class TabCentralWidget(QtGui.QWidget):
     def __init__(self, parent=None):
@@ -322,6 +344,9 @@ class TabCentralWidget(QtGui.QWidget):
         
         self.createTabRegexp()
         self.tab_regexp.activateTabs(self.tabs_lower)
+    
+    def load_settings(self, settings):
+        assert(not self.tab_regexp.load_settings(settings))
         
     def setupTabWidgets(self):
         # Set all possible upper tabs to None
@@ -360,21 +385,6 @@ class RegExp(ui_Regexp):
             self.setupTabs()
         else:
             self.setupWidget()
-    
-    def load_settings(self, settings):
-        settings = ui_Regexp.load_settings(settings)
-#        ['Folder.CBox_recurse.setChecked', , 'Folder.Ledit_recurse.setText', 'Tab_text.TextEdit.setText', 'Ledit_regexp.setText', 'Ledit_replace.setText']
-    
-        for key, item in settings.iteritems():
-            if item != None:
-                
-                to_exec = '{0}({1})'.format(key, item)
-                exec(to_exec)
-            elif key == 'Folder.Ledit_folder.setText':
-                Folder.Ledit_folder.setText(self.parent.get_home_directory())
-            
-    def save_settings(self, settings):
-        settings = ui_Regexp.load_settings(settings)
     
     def activateTabs(self, tabs_lower):
         '''This gets called when the tab gets activated'''
