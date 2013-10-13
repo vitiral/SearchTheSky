@@ -1,13 +1,9 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Oct 12 19:02:08 2013
 
-@author: user
-"""
+#    Special Thanks to the tutorial found at
+#    <http://zetcode.com/tutorials/pyqt4/>
+
 import pdb
 import sys
-
-# TODO: how do you resize stuff?
 
 from PyQt4 import QtGui, QtCore
 
@@ -235,6 +231,7 @@ class ui_RexpTextTab(ui_StdTab):
         self.TextEdit = TextEdit
         
         self.setLayout(vbox)
+
 def main():
     app = QtGui.QApplication(sys.argv)
     ex = ui_SearchTheSky()
