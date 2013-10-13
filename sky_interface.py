@@ -69,9 +69,9 @@ class UserInterface(object):
             self.LineEdits.input_changed)
         self.ui.lineEdit_replace.textEdited.connect(
             self.LineEdits.replace_changed)
-#        QtCore.QObject.connect(self.ui.textEdit_input, 
-#            QtCore.SIGNAL("selectionChanged()"), 
-#            self.TextBoxes.input_selectionChanged)
+        QtCore.QObject.connect(self.ui.textEdit_input, 
+            QtCore.SIGNAL("selectionChanged()"), 
+            self.TextBoxes.input_selectionChanged)
         self.ui.textEdit_input.connect(self.ui.textEdit_input, 
             QtCore.SIGNAL("textChanged()"), self.TextBoxes.set_update)
     
@@ -160,10 +160,9 @@ Ximinez: NOBODY expects the Spanish Inquisition! Our chief weapon is surprise...
     
     def check_update(self):
         '''Does the match / replacement and updates the view in real time'''
-        if self.update:
+        if None: #self.update:
             self.update = False
             print 'Updating', time.time()
-            pdb.set_trace()
             if time.time() - self.last_update > self.UPDATE_PERIOD:
                 cpos = self.get_text_cursor_pos()   # html position
                 checkbox_match = self.u.CheckBoxes.get_text_match()
@@ -211,9 +210,10 @@ Ximinez: NOBODY expects the Spanish Inquisition! Our chief weapon is surprise...
     
     # signals
     def set_update(self):
+        print 'cursor at', self.get_text_cursor_pos()
         self.update = True
     def input_selectionChanged(self):
-        print 'clicked', time.time()
+        print 'cursor at', self.get_text_cursor_pos()
     def input_textChanged(self):
         print 'edited', time.time()
         self.update = True
