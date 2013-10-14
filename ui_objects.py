@@ -102,7 +102,7 @@ class StdWidget(QtGui.QWidget):
                 settings[key] = std_settings[key]
         
         need_settings = {}
-        # process settings that can be processed
+        # process settings that can be processed+?expect(.*?)(t+?expect(.*?)(t
         for key, item in settings.iteritems():
             getexec, setexec = key
             getval, setval = item
@@ -122,6 +122,8 @@ class StdWidget(QtGui.QWidget):
         #  to be used in parent
         return need_settings
     
+    
+    
 #==============================================================================
 # Regular Expressions
 #==============================================================================
@@ -136,8 +138,8 @@ class ui_Regexp(StdWidget):
              'self.Ledit_replace.setText({n})') : (
              '', repr(''' What is this, the Spanish Inquisition? ''')),
         
-        ('str(self.Tab_text.TextEdit.toPlainText())',
-            'self.Tab_text.TextEdit.setText({n})') : ('', 
+        ('str(self.Tab_text.getText())',
+            'self.Tab_text.setText({n})') : ('', 
         repr('''talking about expecting the Spanish Inquisition in the '''
         '''text below:\n''' 
         '''Chapman: I didn't expect a kind of Spanish Inquisition.\n''' 
@@ -159,6 +161,12 @@ class ui_Regexp(StdWidget):
         
         ('self.Folder.Ledit_recurse.text()',
             'self.Folder.Ledit_recurse.setText({n})') : (repr(''), repr('')),
+        
+        ('self.Tab_text.Radio_match.isChecked()',
+            'self.Tab_text.Radio_match.setChecked({n})') : (repr(''), True),
+        
+        ('self.Tab_files.Radio_match.isChecked()',
+            'self.Tab_files.Radio_match.setChecked({n})') : (repr(''), True),       
     }
     
     def __init__(self, parent=None, add_sub_tab = None):
@@ -279,12 +287,12 @@ class ui_RexpFilesTab(QtGui.QWidget):
         vbox_b_right.addLayout(hbox_b_right_top)
         
         # Bottom
-        Browser_file = QtGui.QTextBrowser()
+        TextBrowser = QtGui.QTextBrowser()
         
-        grip = QtGui.QSizeGrip(Browser_file)
-        self.Browser_file = Browser_file
+        grip = QtGui.QSizeGrip(TextBrowser)
+        self.TextBrowser = TextBrowser
         
-        vbox_b_right.addWidget(Browser_file)
+        vbox_b_right.addWidget(TextBrowser)
         
         hbox_bottom.addLayout(vbox_b_right)
         
@@ -315,9 +323,39 @@ class ui_RexpTextTab(QtGui.QWidget):
         
         TextEdit = QtGui.QTextEdit()
         vbox.addWidget(TextEdit)
+        
         self.TextEdit = TextEdit
         
         self.setLayout(vbox)
+    
+    # text cursor functions
+    def get_text_cursor(self):
+        return self.TextEdit.textCursor()
+
+    def set_text_cursor_pos(self, value):
+        tc = self.get_text_cursor()
+        tc.setPosition(value)
+        self.TextEdit.setTextCursor(tc)
+        
+    def get_text_cursor_pos(self):
+        return self.get_text_cursor().position()
+        
+    def get_text_selection(self):
+        
+        cursor = self.get_text_cursor()
+        return cursor.selectionStart(), cursor.selectionEnd()
+    
+    # Reading text functions
+    def getText(self):
+        return str(self.TextEdit.toPlainText())
+    def getHtml(self):
+        return str(self.TextEdit.toHtml())
+    
+    # seting text functions
+    def setHtml(self, html):
+        self.TextEdit.setHtml(html)
+    def setText(self, text):
+        self.TextEdit.setText(text)
 
 
 #==============================================================================
@@ -374,6 +412,8 @@ class TabCentralWidget(QtGui.QWidget):
         self.tabs_upper.addTab(self.tab_regexp, "Reg Exp")
         self.tab_regexp.setEnabled(True)
 
+import time
+
 class RegExp(ui_Regexp):
     _NAME_ = 'REG_EXP'
     def __init__(self, parent = None, add_sub_tab = None):
@@ -381,24 +421,102 @@ class RegExp(ui_Regexp):
         self.parent = parent
         self.add_sub_tab = add_sub_tab
         
+        self._disable_signals = False
+        self._upate = True
+        
         if add_sub_tab:
             self.setupTabs()
         else:
             self.setupWidget()
+        self.startTimer(200)
+    
+    def timerEvent(self, ev):
+        self.check_update()
     
     def activateTabs(self, tabs_lower):
         '''This gets called when the tab gets activated'''
         if not self._tabs_created:
             self.setupTabs()
             
-        self.add_sub_tab(self.Tab_files, "Files")
         self.add_sub_tab(self.Tab_text, "Text")
+        self.add_sub_tab(self.Tab_files, "Files")
+        
+        self.setup_signals()
     
+    def set_update(self):
+        if not self._disable_signals:
+            self._update = True
+    
+    def cursor_changed(self):
+        if not self._disable_signals:
+            print 'Cursor changed', time.time()
+    
+    def setup_signals(self):
+        self.Ledit_regexp.textEdited.connect(self.set_update)
+        self.Ledit_replace.textEdited.connect(self.set_update)
+        
+        QtCore.QObject.connect(self.Tab_text.TextEdit, 
+            QtCore.SIGNAL("cursorPositionChanged()"), self.cursor_changed)
+        
+        QtCore.QObject.connect(self.Tab_text.TextEdit, 
+            QtCore.SIGNAL("textChanged()"), self.set_update)
 
+    def check_update(self):
+        '''Does the match / replacement and updates the view in real time'''
+        from cloudtb import textools
+        from cloudtb.extra import researched_richtext, richtext
+        
+        if self._update:
+            self._disable_signals = True
+            rsearch_rtext = researched_richtext
+            self._update = False
+            print 'Updating', time.time()
+            qtpos = self.Tab_text.get_text_cursor_pos() # visible pos
+            print 'Got pos', qtpos
+            raw_html = self.Tab_text.getHtml()
+            # we need to get the "True Position", i.e. the position without
+            # our formats added in. I think this is the best way to do it
+            deformated = richtext.deformat_html(raw_html,
+                richtext.KEEPIF['black-bold'])
+            deformated_str = richtext.get_str_formated_true(deformated)
+            true_pos = richtext.get_position(deformated, 
+                                visible_position = qtpos)[0]
+            print 'true pos', true_pos
+            del qtpos, deformated, raw_html
+            
+            researched = textools.re_search(
+                str(self.Ledit_regexp.text()), deformated_str)
+                
+            # Give helpful message if this is true
+            if researched == None:
+                print "No Match"
+                self._disable_signals = False
+                return
+            
+            # Set the html to the correct values
+            if self.Tab_text.Radio_match.isChecked():
+                html_list = rsearch_rtext.re_search_format_html(researched)
+            else:
+                replaced = textools.re_search_replace(researched, 
+                    str(self.Ledit_replace.text()), preview = True)
+                html_list = rsearch_rtext.re_search_format_html(replaced)
+            
+            raw_html = richtext.get_str_formated_html(
+                html_list)
+            self.Tab_text.setHtml(raw_html)
+            
+            visible_pos = richtext.get_position(html_list,
+                    text_position = true_pos)[1]
+            print 'new visible pos', visible_pos
+            self.Tab_text.set_text_cursor_pos(visible_pos)
+            
+            self._disable_signals = False
+        
 def main():
     app = QtGui.QApplication(sys.argv)
     ex = SearchTheSky()
     sys.exit(app.exec_())
+    print QtGui.QTextEdit
 
 if __name__ == '__main__':
     main()
