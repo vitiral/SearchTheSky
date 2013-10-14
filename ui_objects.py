@@ -16,6 +16,7 @@ import pdb
 import sys
 
 from PyQt4 import QtGui, QtCore
+import bs4
 
 from cloudtb import logtools, dbe
 from logging import DEBUG, INFO, ERROR
@@ -449,11 +450,13 @@ class RegExp(ui_Regexp):
     
     def cursor_changed(self):
         if not self._disable_signals:
-            print 'Cursor changed', time.time()
-    
+            pass
+        
     def setup_signals(self):
         self.Ledit_regexp.textEdited.connect(self.set_update)
         self.Ledit_replace.textEdited.connect(self.set_update)
+        # only need one radio match, we only have one
+        self.Tab_text.Radio_match.toggled.connect(self.set_update)
         
         QtCore.QObject.connect(self.Tab_text.TextEdit, 
             QtCore.SIGNAL("cursorPositionChanged()"), self.cursor_changed)
@@ -470,33 +473,45 @@ class RegExp(ui_Regexp):
             self._disable_signals = True
             rsearch_rtext = researched_richtext
             self._update = False
-            print 'Updating', time.time()
+            # print 'Updating', time.time()
             qtpos = self.Tab_text.get_text_cursor_pos() # visible pos
-            print 'Got pos', qtpos
+            # print 'Got pos', qtpos
             raw_html = self.Tab_text.getHtml()
             # we need to get the "True Position", i.e. the position without
             # our formats added in. I think this is the best way to do it
             deformated = richtext.deformat_html(raw_html,
-                richtext.KEEPIF['black-bold'])
+                (richtext.KEEPIF['black-bold'], 
+                 richtext.KEEPIF['red-underlined-bold']))
             deformated_str = richtext.get_str_formated_true(deformated)
             true_pos = richtext.get_position(deformated, 
                                 visible_position = qtpos)[0]
-            print 'true pos', true_pos
-            del qtpos, deformated, raw_html
+            # print 'true pos', true_pos
+            del qtpos, deformated
             
-            researched = textools.re_search(
-                str(self.Ledit_regexp.text()), deformated_str)
-                
+            regexp = str(self.Ledit_regexp.text())
+            try:
+                researched = textools.re_search(
+                    regexp, deformated_str)
+            except re.sre_compile.error as E:
+                print 'Comp error'
+#            pdb.set_trace()
             # Give helpful message if this is true
-            if researched == None:
-                print "No Match"
+            if len(researched) == 1 and type(researched[0]) == str:
+                # no match
+                self.Tab_text.setText(deformated_str)
+                soup = bs4.BeautifulSoup(raw_html)
+                body = soup.body
+                
                 self._disable_signals = False
                 return
+            del raw_html
             
             # Set the html to the correct values
             if self.Tab_text.Radio_match.isChecked():
+                print 'doing match'
                 html_list = rsearch_rtext.re_search_format_html(researched)
             else:
+                print 'doing replace'
                 replaced = textools.re_search_replace(researched, 
                     str(self.Ledit_replace.text()), preview = True)
                 html_list = rsearch_rtext.re_search_format_html(replaced)
