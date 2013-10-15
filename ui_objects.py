@@ -14,6 +14,7 @@ possible / easy?
 
 import pdb
 import sys
+import re
 
 from PyQt4 import QtGui, QtCore
 import bs4
@@ -323,8 +324,10 @@ class ui_RexpTextTab(QtGui.QWidget):
         vbox.addLayout(hbox_top)
         
         TextEdit = QtGui.QTextEdit()
-        vbox.addWidget(TextEdit)
+        TextEdit.setAcceptRichText(False)
+        TextEdit.setAutoFormatting(QtGui.QTextEdit.AutoNone)
         
+        vbox.addWidget(TextEdit)
         self.TextEdit = TextEdit
         
         self.setLayout(vbox)
@@ -483,29 +486,59 @@ class RegExp(ui_Regexp):
                 (richtext.KEEPIF['black-bold'], 
                  richtext.KEEPIF['red-underlined-bold']))
             deformated_str = richtext.get_str_formated_true(deformated)
+            assert(len(deformated_str) <= len(self.Tab_text.getText()))
+            ot = self.Tab_text.getText()
+            nt = deformated_str
+#            if len(deformated_str) < len(self.Tab_text.getText()):
+#                pdb.set_trace()
             true_pos = richtext.get_position(deformated, 
                                 visible_position = qtpos)[0]
-            # print 'true pos', true_pos
-            del qtpos, deformated
+            # TODO: Bug where if you type immediately after a formatted part
+            # it just deletes your text. High Priority. This is my first
+            # attempt at fixing
+            
+                # oK, I can solve the code formating problem simply
+# getpos needs to return the index of the last HtmlPart and the
+# relative index where pos is.
+# Then I just find where the strings differ next(n[0] for n in enumerate(text) if n[1] != text2[n[0]])
+# and finally how much (len(text) - len(text2))
+# then I go through the parts and replace the true text with the visible text
+#            if len(self._true_text) < (deformated_str): # data was added
+#                index_dif = next(n[0] for n in enumerate(deformated_str) 
+#                    if n[1] != self._prev_visible[n[0]])
+#                pos_tup, obj_tup = richtext.get_position(deformated, 
+#                                visible_position = index_dif,
+#                                return_list_index = True)
+#                true_text = richtext.get_true_text(deformated, )
+#                true_pos = poses[0]; del poses
+#                hlist_index, rel_pos = obj_tuple; del obj_tuple
+            
             
             regexp = str(self.Ledit_regexp.text())
-            try:
-                researched = textools.re_search(
-                    regexp, deformated_str)
-            except re.sre_compile.error as E:
-                print 'Comp error'
-#            pdb.set_trace()
-            # Give helpful message if this is true
-            if len(researched) == 1 and type(researched[0]) == str:
-                # no match
-                self.Tab_text.setText(deformated_str)
-                soup = bs4.BeautifulSoup(raw_html)
-                body = soup.body
-                
-                self._disable_signals = False
-                return
-            del raw_html
-            
+            error = None
+            # These slow it down alot and are not really useful. Just
+            # display an error
+            if regexp == '.':
+                error = "'.' -- Matches everything, not displayed"
+            elif regexp == '\w':
+                error = "'\w' -- Matches all characters, not displayed"
+            else:
+                try:
+                    researched = textools.re_search(
+                        regexp, deformated_str)
+                    if len(researched) == 1 and type(researched[0]) == str:
+                        error = "No Match Found" 
+                except re.sre_compile.error as E:
+                    error = str(E)
+            if error:
+                print error
+                # believe it or not, setText will add formating!           
+                # have to explicitly set html
+                plain_text_html = richtext.get_str_plain_html(deformated_str)
+                self.Tab_text.setHtml(plain_text_html)
+                self._disable_signals = False                
+                return                
+
             # Set the html to the correct values
             if self.Tab_text.Radio_match.isChecked():
                 print 'doing match'

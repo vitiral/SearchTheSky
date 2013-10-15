@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>442</width>
-    <height>399</height>
+    <width>452</width>
+    <height>390</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -18,6 +18,9 @@
   </property>
   <property name="windowTitle">
    <string>Search The Sky</string>
+  </property>
+  <property name="animated">
+   <bool>true</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QTabWidget" name="tabWidget_lower">
@@ -100,6 +103,12 @@
         <height>191</height>
        </rect>
       </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
      </widget>
      <widget class="QTextBrowser" name="textBrowser_files">
       <property name="geometry">
@@ -180,6 +189,9 @@
         <height>211</height>
        </rect>
       </property>
+      <property name="autoFormatting">
+       <set>QTextEdit::AutoNone</set>
+      </property>
       <property name="html">
        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -190,6 +202,9 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;    (JARRING CHORD - the cardinals burst in) &lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;    Ximinez: &lt;span style=&quot; font-weight:600; text-decoration: underline; vertical-align:sub;&quot;&gt;2:&lt;/span&gt;&lt;span style=&quot; font-weight:600; color:#b30000;&quot;&gt;(&lt;/span&gt;&lt;span style=&quot; font-weight:600; color:#b3008d;&quot;&gt;(&lt;/span&gt;&lt;span style=&quot; font-weight:600; color:#000000;&quot;&gt;NOBODY &lt;/span&gt;&lt;span style=&quot; font-weight:600; color:#b3008d;&quot;&gt;)&lt;/span&gt;&lt;span style=&quot; font-weight:600; color:#b3008d; vertical-align:sub;&quot;&gt;1&lt;/span&gt;&lt;span style=&quot; font-weight:600; color:#000000;&quot;&gt;expect&lt;/span&gt;&lt;span style=&quot; font-weight:600; color:#4b00b3;&quot;&gt;(&lt;/span&gt;&lt;span style=&quot; font-weight:600; color:#000000;&quot;&gt;s &lt;/span&gt;&lt;span style=&quot; font-weight:600; color:#4b00b3;&quot;&gt;)&lt;/span&gt;&lt;span style=&quot; font-weight:600; color:#4b00b3; vertical-align:sub;&quot;&gt;2&lt;/span&gt;&lt;span style=&quot; font-weight:600; color:#0041b3;&quot;&gt;(&lt;/span&gt;&lt;span style=&quot; font-weight:600; color:#000000;&quot;&gt;the &lt;/span&gt;&lt;span style=&quot; font-weight:600; color:#0041b3;&quot;&gt;)&lt;/span&gt;&lt;span style=&quot; font-weight:600; color:#0041b3; vertical-align:sub;&quot;&gt;3&lt;/span&gt;&lt;span style=&quot; font-weight:600; color:#000000;&quot;&gt;Spanish Inquisition&lt;/span&gt;&lt;span style=&quot; font-weight:600; color:#00b398;&quot;&gt;(&lt;/span&gt;&lt;span style=&quot; font-weight:600; color:#000000;&quot;&gt;!&lt;/span&gt;&lt;span style=&quot; font-weight:600; color:#00b398;&quot;&gt;)&lt;/span&gt;&lt;span style=&quot; font-weight:600; color:#00b398; vertical-align:sub;&quot;&gt;4&lt;/span&gt;&lt;span style=&quot; font-weight:600; color:#b30000;&quot;&gt;)&lt;/span&gt;&lt;span style=&quot; font-weight:600; color:#b30000; vertical-align:sub;&quot;&gt;0&lt;/span&gt; Our chief weapon is surprise...surprise and fear...fear and surprise.... Our two weapons are fear and surprise...and ruthless efficiency.... Our *three* weapons are fear, surprise, and ruthless efficiency...and an almost fanatical devotion to the Pope.... Our *four*...no... *Amongst* our weapons.... Amongst our weaponry...are such elements as fear, surprise.... I'll come in again. (Exit and exeunt) &lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;    &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="acceptRichText">
+       <bool>false</bool>
       </property>
      </widget>
      <widget class="QGroupBox" name="groupBox">
@@ -380,7 +395,7 @@ p, li { white-space: pre-wrap; }
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>442</width>
+     <width>452</width>
      <height>20</height>
     </rect>
    </property>

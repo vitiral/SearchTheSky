@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'sky_ui.ui'
 #
-# Created: Thu Oct 10 00:46:29 2013
+# Created: Mon Oct 14 09:48:22 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -17,12 +17,13 @@ except AttributeError:
 class Ui_SearchTheSky_window(object):
     def setupUi(self, SearchTheSky_window):
         SearchTheSky_window.setObjectName(_fromUtf8("SearchTheSky_window"))
-        SearchTheSky_window.resize(442, 399)
+        SearchTheSky_window.resize(452, 390)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(SearchTheSky_window.sizePolicy().hasHeightForWidth())
         SearchTheSky_window.setSizePolicy(sizePolicy)
+        SearchTheSky_window.setAnimated(True)
         self.centralwidget = QtGui.QWidget(SearchTheSky_window)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         self.tabWidget_lower = QtGui.QTabWidget(self.centralwidget)
@@ -46,6 +47,11 @@ class Ui_SearchTheSky_window(object):
         self.lineEdit_folder.setObjectName(_fromUtf8("lineEdit_folder"))
         self.treeView_files = QtGui.QTreeView(self.tab_files)
         self.treeView_files.setGeometry(QtCore.QRect(10, 51, 141, 191))
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.treeView_files.sizePolicy().hasHeightForWidth())
+        self.treeView_files.setSizePolicy(sizePolicy)
         self.treeView_files.setObjectName(_fromUtf8("treeView_files"))
         self.textBrowser_files = QtGui.QTextBrowser(self.tab_files)
         self.textBrowser_files.setGeometry(QtCore.QRect(160, 73, 271, 171))
@@ -68,6 +74,8 @@ class Ui_SearchTheSky_window(object):
         self.tab_text.setObjectName(_fromUtf8("tab_text"))
         self.textEdit_input = QtGui.QTextEdit(self.tab_text)
         self.textEdit_input.setGeometry(QtCore.QRect(0, 30, 431, 211))
+        self.textEdit_input.setAutoFormatting(QtGui.QTextEdit.AutoNone)
+        self.textEdit_input.setAcceptRichText(False)
         self.textEdit_input.setObjectName(_fromUtf8("textEdit_input"))
         self.groupBox = QtGui.QGroupBox(self.tab_text)
         self.groupBox.setGeometry(QtCore.QRect(0, 0, 161, 31))
@@ -124,7 +132,7 @@ class Ui_SearchTheSky_window(object):
         self.tabWidget_upper.addTab(self.tab, _fromUtf8(""))
         SearchTheSky_window.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(SearchTheSky_window)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 442, 20))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 452, 20))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         self.menuOptions = QtGui.QMenu(self.menubar)
         self.menuOptions.setObjectName(_fromUtf8("menuOptions"))
