@@ -215,7 +215,17 @@ class ui_RexpFiles_Folder(QtGui.QWidget):
     def __init__(self, parent=None):
         super(ui_RexpFiles_Folder, self).__init__(parent)
         self.setupUi()
+        self.setup_signals()
     
+    def setup_signals(self):
+        self.But_folder.pressed.connect(self.select_folder)
+    
+    def select_folder(self):
+        folder = QtGui.QFileDialog.getExistingDirectory(self,
+          "Select Directory", self.get_folder())
+        if not folder.isEmpty():
+            self.Ledit_folder.setText(folder)
+            
     def setupUi(self):
         h_box = QtGui.QHBoxLayout()
 
@@ -247,12 +257,24 @@ class ui_RexpFiles_Folder(QtGui.QWidget):
         self.Ledit_recurse = Ledit_recurse
         
         self.setLayout(h_box)
+    
+    def get_folder(self):
+        return str(self.Ledit_folder.text())
         
 class ui_RexpFilesTab(QtGui.QWidget):
     def __init__(self, Folder, parent=None, create_child_tab = None):
         super(ui_RexpFilesTab, self).__init__(parent)
         self.Folder = Folder
         self.setupUi()
+        self.setup_signals()
+    
+    def setup_signals(self):
+        self.Folder.But_find.pressed.connect(self.search)
+    
+    def search(self):
+        folder = self.Folder.get_folder()
+        print 'Searching', folder
+        
     
     def setupUi(self):
         vbox_main = QtGui.QVBoxLayout()
@@ -300,9 +322,8 @@ class ui_RexpFilesTab(QtGui.QWidget):
         
         # Finally, add hbox
         vbox_main.addLayout(hbox_bottom)
-        
         self.setLayout(vbox_main)
-
+    
 class ui_RexpTextTab(QtGui.QWidget):
     def __init__(self, parent=None):
         super(ui_RexpTextTab, self).__init__(parent)
@@ -543,6 +564,9 @@ class RegExp(ui_Regexp):
                 error = "'.' -- Matches everything, not displayed"
             elif regexp == '\w':
                 error = "'\w' -- Matches all characters, not displayed"
+            elif regexp == '':
+                error = ("'' -- Results not displayed, matches between every"
+                            " character.")
             else:
                 try:
                     researched = textools.re_search(
