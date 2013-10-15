@@ -23,6 +23,8 @@ from cloudtb import logtools, dbe
 from logging import DEBUG, INFO, ERROR
 log = logtools.get_logger(level = DEBUG)
 
+from cloudtb.extra.pyqt import StdWidget
+
 #==============================================================================
 # Standard Object Bases
 #==============================================================================
@@ -31,12 +33,15 @@ from ui.regexp_ui import (ui_RegExp, ui_RexpFiles_Folder, ui_RexpFilesTab,
     ui_RexpTextTab)
 
 class RexpFiles_Folder(ui_RexpFiles_Folder):
+    _NAME_ = 'REG_EXP_FOLDER'
     pass
 
 class RexpFilesTab(ui_RexpFilesTab):
+    _NAME_ = 'REG_EXP_PART_FILES'
     pass
 
 class RexpTextTab(ui_RexpTextTab):
+    _NAME_ = 'REG_EXP_PART_TEXT'
     def __init__(self, get_regexp, get_replace, parent = None):
         super(RexpTextTab, self).__init__(parent)
         self.get_regexp = get_regexp
@@ -229,6 +234,19 @@ class RegExp(ui_RegExp):
         else:
             self.setupWidget()
         self.startTimer(200)
+    
+    def save_settings(self):
+        StdWidget.save_settings(self)
+        if self._tabs_created:
+            self.Tab_files.save_settings()
+            self.Tab_text.save_settings()
+        
+    def load_settings(self, application_settings):
+        app_set = application_settings
+        StdWidget.load_settings(self, app_set)
+        if self._tabs_created:
+            self.Tab_files.load_settings(app_set)
+            self.Tab_text.load_settings(app_set)
     
     def setupTabs(self):
         if self._tabs_created:

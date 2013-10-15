@@ -34,35 +34,6 @@ class ui_RegExp(StdWidget):
              'self.Ledit_replace.setText({n})') : (
              '', repr(''' What is this, the Spanish Inquisition? ''')),
         
-        ('str(self.Tab_text.getText())',
-            'self.Tab_text.setText({n})') : ('', 
-        repr('''talking about expecting the Spanish Inquisition in the '''
-        '''text below:\n''' 
-        '''Chapman: I didn't expect a kind of Spanish Inquisition.\n''' 
-        '''(JARRING CHORD - the cardinals burst in) \n'''
-        '''Ximinez: NOBODY expects the Spanish Inquisition! Our chief '''
-        '''weapon is surprise...surprise and fear...fear and surprise.... '''
-        '''Our two weapons are fear and surprise...and ruthless '''
-        '''efficiency.... Our *three* weapons are fear, surprise, and '''
-        '''ruthless efficiency...and an almost fanatical devotion to the '''
-        '''Pope.... Our *four*...no... *Amongst* our weapons.... Amongst '''
-        '''our weaponry... are such elements as fear, surprise.... I'll '''
-        '''come in again. (Exit and exeunt)\n''')), 
-        
-        ('str(self.Folder.Ledit_folder.text())', 
-            'self.Folder.Ledit_folder.setText({n})') : (repr(''), repr('')),        
-        
-        ('self.Folder.CBox_recurse.isChecked()', 
-            'self.Folder.CBox_recurse.setChecked({n})' ): (repr(''), True),
-        
-        ('self.Folder.Ledit_recurse.text()',
-            'self.Folder.Ledit_recurse.setText({n})') : (repr(''), repr('')),
-        
-        ('self.Tab_text.Radio_match.isChecked()',
-            'self.Tab_text.Radio_match.setChecked({n})') : (repr(''), True),
-        
-        ('self.Tab_files.Radio_match.isChecked()',
-            'self.Tab_files.Radio_match.setChecked({n})') : (repr(''), True),       
     }
     
     def __init__(self, parent=None, add_sub_tab = None):
@@ -101,11 +72,18 @@ class ui_RegExp(StdWidget):
     def get_replace(self):
         return str(self.Ledit_replace.text())
     
-    def setupWidget(self):
-        self._vbox.addWidget(self.Folder)
+class ui_RexpFiles_Folder(StdWidget):
+    std_settings = {
+        ('str(self.Ledit_folder.text())', 
+            'self.Ledit_folder.setText({n})') : (repr(''), repr('')),        
+        
+        ('self.CBox_recurse.isChecked()', 
+            'self.CBox_recurse.setChecked({n})' ): (repr(''), True),
+        
+        ('self.Ledit_recurse.text()',
+            'self.Ledit_recurse.setText({n})') : (repr(''), repr('')),
+    }
     
-
-class ui_RexpFiles_Folder(QtGui.QWidget):
     def __init__(self, parent=None):
         super(ui_RexpFiles_Folder, self).__init__(parent)
         self.setupUi()
@@ -155,7 +133,11 @@ class ui_RexpFiles_Folder(QtGui.QWidget):
     def get_folder(self):
         return str(self.Ledit_folder.text())
         
-class ui_RexpFilesTab(QtGui.QWidget):
+class ui_RexpFilesTab(StdWidget):
+    std_settings = {
+        ('self.Radio_match.isChecked()',
+            'self.Radio_match.setChecked({n})') : (repr(''), True),
+    }
     def __init__(self, Folder, parent=None, create_child_tab = None):
         super(ui_RexpFilesTab, self).__init__(parent)
         self.Folder = Folder
@@ -218,7 +200,27 @@ class ui_RexpFilesTab(QtGui.QWidget):
         vbox_main.addLayout(hbox_bottom)
         self.setLayout(vbox_main)
     
-class ui_RexpTextTab(QtGui.QWidget):
+class ui_RexpTextTab(StdWidget):
+    std_settings = {
+        ('str(self.getText())',
+            'self.setText({n})') : ('', 
+        repr('''talking about expecting the Spanish Inquisition in the '''
+        '''text below:\n''' 
+        '''Chapman: I didn't expect a kind of Spanish Inquisition.\n''' 
+        '''(JARRING CHORD - the cardinals burst in) \n'''
+        '''Ximinez: NOBODY expects the Spanish Inquisition! Our chief '''
+        '''weapon is surprise...surprise and fear...fear and surprise.... '''
+        '''Our two weapons are fear and surprise...and ruthless '''
+        '''efficiency.... Our *three* weapons are fear, surprise, and '''
+        '''ruthless efficiency...and an almost fanatical devotion to the '''
+        '''Pope.... Our *four*...no... *Amongst* our weapons.... Amongst '''
+        '''our weaponry... are such elements as fear, surprise.... I'll '''
+        '''come in again. (Exit and exeunt)\n''')), 
+        
+        ('self.Radio_match.isChecked()',
+            'self.Radio_match.setChecked({n})') : (repr(''), True),
+    }
+
     def __init__(self, parent=None):
         super(ui_RexpTextTab, self).__init__(parent)
         self.setupUi()
