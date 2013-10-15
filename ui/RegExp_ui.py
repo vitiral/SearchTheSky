@@ -73,6 +73,7 @@ class ui_RegExp(StdWidget):
         return str(self.Ledit_replace.text())
     
 class ui_RexpFiles_Folder(StdWidget):
+    _NAME_ = 'REG_EXP_FOLDER'
     std_settings = {
         ('str(self.Ledit_folder.text())', 
             'self.Ledit_folder.setText({n})') : (repr(''), repr('')),        
@@ -134,6 +135,7 @@ class ui_RexpFiles_Folder(StdWidget):
         return str(self.Ledit_folder.text())
         
 class ui_RexpFilesTab(StdWidget):
+    _NAME_ = 'REG_EXP_PART_FILES'
     std_settings = {
         ('self.Radio_match.isChecked()',
             'self.Radio_match.setChecked({n})') : (repr(''), True),
@@ -201,6 +203,7 @@ class ui_RexpFilesTab(StdWidget):
         self.setLayout(vbox_main)
     
 class ui_RexpTextTab(StdWidget):
+    _NAME_ = 'REG_EXP_PART_TEXT'
     std_settings = {
         ('str(self.getText())',
             'self.setText({n})') : ('', 

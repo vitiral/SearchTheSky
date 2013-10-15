@@ -24,7 +24,9 @@ from logging import DEBUG, INFO, ERROR
 log = logtools.get_logger(level = DEBUG)
 
 from cloudtb.extra.pyqt import StdWidget
-
+from cloudtb import textools
+from cloudtb.extra import researched_richtext, richtext
+        
 #==============================================================================
 # Standard Object Bases
 #==============================================================================
@@ -33,15 +35,12 @@ from ui.RegExp_ui import (ui_RegExp, ui_RexpFiles_Folder, ui_RexpFilesTab,
     ui_RexpTextTab)
 
 class RexpFiles_Folder(ui_RexpFiles_Folder):
-    _NAME_ = 'REG_EXP_FOLDER'
     pass
 
 class RexpFilesTab(ui_RexpFilesTab):
-    _NAME_ = 'REG_EXP_PART_FILES'
     pass
 
 class RexpTextTab(ui_RexpTextTab):
-    _NAME_ = 'REG_EXP_PART_TEXT'
     def __init__(self, get_regexp, get_replace, parent = None):
         super(RexpTextTab, self).__init__(parent)
         self.get_regexp = get_regexp
@@ -62,8 +61,32 @@ class RexpTextTab(ui_RexpTextTab):
             QtCore.SIGNAL("textChanged()"), self.set_update)
     
     def cursor_changed(self):
-        if not self._disable_signals:
-            pass
+        self._prev_cursor = self.get_text_cursor_pos()
+            
+#            # if you are at the edge of a formatted section, move to the left
+#            # if you are inside a formatted section, move to the right side
+#            qtpos = self.get_text_cursor_pos() # visible pos
+#            # print 'Got pos', qtpos
+#            raw_html = self.getHtml()
+#            deformated = richtext.deformat_html(raw_html,
+#                (richtext.KEEPIF['black-bold'], 
+#                 richtext.KEEPIF['red-underlined-bold']))
+#            poses, obj_poses = richtext.get_position(deformated, 
+#                                visible_position = qtpos, 
+#                                return_list_index = True)
+#            true_pos, vis_pos, html_pos = poses
+#            index, rel_vis_pos = obj_poses
+#            hpart = deformated[index]
+#            vis_text = hpart.visible_text
+#            true_text = hpart.true_text
+#            if rel_vis_pos == 0:
+#                # We are on the right side of formatting
+#                set_true = true_pos - 1
+#            if len(true_text) == 0:
+#                # we are inside of formatting. Move right...?
+#                # haha, not a good idea.
+            
+            
         
     def set_update(self):
         if not self._disable_signals:
@@ -71,9 +94,6 @@ class RexpTextTab(ui_RexpTextTab):
             
     def check_update(self):
         '''Does the match / replacement and updates the view in real time'''
-        from cloudtb import textools
-        from cloudtb.extra import researched_richtext, richtext
-        
         if self._update:
             self._disable_signals = True
             self.clear_error()
