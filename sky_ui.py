@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'sky_ui.ui'
 #
-# Created: Mon Oct 14 09:48:22 2013
+# Created: Mon Oct 14 19:54:19 2013
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -91,6 +91,15 @@ class Ui_SearchTheSky_window(object):
         self.pushButton = QtGui.QPushButton(self.tab_text)
         self.pushButton.setGeometry(QtCore.QRect(360, 3, 61, 25))
         self.pushButton.setObjectName(_fromUtf8("pushButton"))
+        self.label = QtGui.QLabel(self.tab_text)
+        self.label.setGeometry(QtCore.QRect(210, 10, 121, 16))
+        font = QtGui.QFont()
+        font.setPointSize(15)
+        font.setBold(True)
+        font.setItalic(True)
+        font.setWeight(75)
+        self.label.setFont(font)
+        self.label.setObjectName(_fromUtf8("label"))
         self.tabWidget_lower.addTab(self.tab_text, _fromUtf8(""))
         self.tab_help = QtGui.QWidget()
         self.tab_help.setObjectName(_fromUtf8("tab_help"))
@@ -187,6 +196,7 @@ class Ui_SearchTheSky_window(object):
         self.radioButton_text_replace.setText(QtGui.QApplication.translate("SearchTheSky_window", "Replace", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton.setToolTip(QtGui.QApplication.translate("SearchTheSky_window", "Copy results to clipboard", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton.setText(QtGui.QApplication.translate("SearchTheSky_window", "Copy", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("SearchTheSky_window", "TextLabel", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget_lower.setTabText(self.tabWidget_lower.indexOf(self.tab_text), QtGui.QApplication.translate("SearchTheSky_window", "Text", None, QtGui.QApplication.UnicodeUTF8))
         self.textBrowser_help.setDocumentTitle(QtGui.QApplication.translate("SearchTheSky_window", "Help", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget_lower.setTabText(self.tabWidget_lower.indexOf(self.tab_help), QtGui.QApplication.translate("SearchTheSky_window", "Help", None, QtGui.QApplication.UnicodeUTF8))

@@ -322,6 +322,18 @@ class ui_RexpTextTab(QtGui.QWidget):
         self.But_copy = But_copy
         
         vbox.addLayout(hbox_top)
+
+        Label_error = QtGui.QLabel()
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        font.setItalic(True)
+        font.setWeight(75)
+        Label_error.setFont(font)
+        Label_error.setWordWrap(True)
+        vbox.addWidget(Label_error)        
+        Label_error.hide()
+        self.Label_error = Label_error
         
         TextEdit = QtGui.QTextEdit()
         TextEdit.setAcceptRichText(False)
@@ -331,6 +343,13 @@ class ui_RexpTextTab(QtGui.QWidget):
         self.TextEdit = TextEdit
         
         self.setLayout(vbox)
+    
+    def set_error(self, error):
+        self.Label_error.setText(str(error))
+        self.Label_error.show()
+    
+    def clear_error(self):
+        self.Label_error.hide()
     
     # text cursor functions
     def get_text_cursor(self):
@@ -474,6 +493,8 @@ class RegExp(ui_Regexp):
         
         if self._update:
             self._disable_signals = True
+            self.Tab_text.clear_error()
+            
             rsearch_rtext = researched_richtext
             self._update = False
             # print 'Updating', time.time()
@@ -532,6 +553,7 @@ class RegExp(ui_Regexp):
                     error = str(E)
             if error:
                 print error
+                self.Tab_text.set_error(error)
                 # believe it or not, setText will add formating!           
                 # have to explicitly set html
                 plain_text_html = richtext.get_str_plain_html(deformated_str)
