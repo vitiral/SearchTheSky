@@ -29,7 +29,7 @@ from cloudtb.extra.pyqt import StdWidget
 # Standard Object Bases
 #==============================================================================
 
-from ui.regexp_ui import (ui_RegExp, ui_RexpFiles_Folder, ui_RexpFilesTab, 
+from ui.RegExp_ui import (ui_RegExp, ui_RexpFiles_Folder, ui_RexpFilesTab, 
     ui_RexpTextTab)
 
 class RexpFiles_Folder(ui_RexpFiles_Folder):
