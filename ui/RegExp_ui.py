@@ -25,6 +25,7 @@ def get_match_replace_radiobox(parent):
 # Regular Expressions ui classes
 #==============================================================================
 class ui_RegExp(StdWidget):
+    _NAME_ = 'REG_EXP'
     std_settings = {
         ('str(self.Ledit_regexp.text())' , 'self.Ledit_regexp.setText({n})'):(
              '', repr(r'''([a-zA-Z']+\s)+?expect(.*?)(the )*Spanish '''
