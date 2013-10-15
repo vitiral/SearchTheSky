@@ -61,30 +61,8 @@ class RexpTextTab(ui_RexpTextTab):
             QtCore.SIGNAL("textChanged()"), self.set_update)
     
     def cursor_changed(self):
-        self._prev_cursor = self.get_text_cursor_pos()
-            
-#            # if you are at the edge of a formatted section, move to the left
-#            # if you are inside a formatted section, move to the right side
-#            qtpos = self.get_text_cursor_pos() # visible pos
-#            # print 'Got pos', qtpos
-#            raw_html = self.getHtml()
-#            deformated = richtext.deformat_html(raw_html,
-#                (richtext.KEEPIF['black-bold'], 
-#                 richtext.KEEPIF['red-underlined-bold']))
-#            poses, obj_poses = richtext.get_position(deformated, 
-#                                visible_position = qtpos, 
-#                                return_list_index = True)
-#            true_pos, vis_pos, html_pos = poses
-#            index, rel_vis_pos = obj_poses
-#            hpart = deformated[index]
-#            vis_text = hpart.visible_text
-#            true_text = hpart.true_text
-#            if rel_vis_pos == 0:
-#                # We are on the right side of formatting
-#                set_true = true_pos - 1
-#            if len(true_text) == 0:
-#                # we are inside of formatting. Move right...?
-#                # haha, not a good idea.
+        if not self._disable_signals:
+            pass
             
             
         
