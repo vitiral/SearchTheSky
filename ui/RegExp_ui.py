@@ -5,7 +5,7 @@ log = logtools.get_logger(level = DEBUG)
 
 from PyQt4 import QtGui
 from cloudtb.extra.pyqt import StdWidget
-
+from cloudtb.extra import richtext
 
 #==============================================================================
 # Constructor Functions
@@ -211,8 +211,8 @@ class ui_RexpFilesTab(StdWidget):
 class ui_RexpTextTab(StdWidget):
     _NAME_ = 'REG_EXP_PART_TEXT'
     std_settings = {
-        ('repr(str(self.getText()))',
-            'self.setText({n})') : ('', 
+        ('self.getDeformated({n})',
+            'self.setText({n})') : ( repr(''),
         repr('''talking about expecting the Spanish Inquisition in the '''
         '''text below:\n''' 
         '''Chapman: I didn't expect a kind of Spanish Inquisition.\n''' 
@@ -300,11 +300,20 @@ class ui_RexpTextTab(StdWidget):
     def getHtml(self):
         return str(self.TextEdit.toHtml())
     
+    def getDeformated(self):
+        raw_html = self.getHtml()
+        deformated = richtext.deformat_html(raw_html,
+                (richtext.KEEPIF['black-bold'], 
+                 richtext.KEEPIF['red-underlined-bold']))
+        deformated_str = richtext.get_str_formated_true(deformated)
+        return deformated_str
+    
     # seting text functions
     def setHtml(self, html):
         self.TextEdit.setHtml(html)
     def setText(self, text):
-        self.TextEdit.setText(text)
+        plain_text_html = richtext.get_str_plain_html(text)
+        self.setHtml(plain_text_html)
         
 from cloudtb.extra.PyQt import treeview
 

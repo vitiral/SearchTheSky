@@ -246,8 +246,7 @@ class RexpTextTab(ui_RexpTextTab):
                 self.set_error(error)
                 # believe it or not, setText will add formating!           
                 # have to explicitly set html
-                plain_text_html = richtext.get_str_plain_html(deformated_str)
-                self.setHtml(plain_text_html)
+                self.setText(deformated_str)
                 self._disable_signals = False                
                 return                
 
@@ -375,12 +374,11 @@ class SearchTheSky(QtGui.QMainWindow):
     def load_settings(self, set_settings = None):
         try:
             if set_settings != None:
-                self.settings = set_settings
+                settings = set_settings
             else:
                 settings = shelve.open(SETTINGS_PATH)
             self.Tabs.load_settings(settings)
-        except Exception as E:
-#        except ZeroDivisionError:
+        except Exception:
             print "Problem loading settings. Using default. Error:"
             print errors.get_prev_exception_str()
             settings = dict()
