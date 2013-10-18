@@ -314,15 +314,16 @@ class Menu(QtGui.QMenuBar):
 
 
 class TabCentralWidget(StdWidget):
-    std_settings = {('self.tabs_upper.currentIndex()', 
-                         'self.tabs_upper.setCurrentIndex({n})'),('', 0)
-                        } 
+    _NAME_ = 'TAB_CENTRAL'
     def __init__(self, parent=None):
         super(TabCentralWidget, self).__init__(parent)
         self.setupTabWidgets()
         
         self.createTabRegExp()
         self.tab_regexp.activateTabs(self.tabs_lower)
+        self.std_settings = {('self.tabs_upper.currentIndex', 
+                         'self.tabs_upper.setCurrentIndex'): ([], [0])
+                        } 
     
     def load_settings(self, settings):
         StdWidget.load_settings(self, settings)

@@ -27,21 +27,27 @@ def get_match_replace_radiobox(parent):
 EMPTY_STR = repr('')
 class ui_RegExp(StdWidget):
     _NAME_ = 'REG_EXP'
-    std_settings = {
-        ('repr(str(self.Ledit_regexp.text()))' , 'self.Ledit_regexp.setText({n})'):(
-             EMPTY_STR, repr(r'''([a-zA-Z']+\s)+?expect(.*?)(the )*Spanish '''
-                        r'''Inquisition(!|.)''')),
-        
-        ('repr(str(self.Ledit_replace.text()))', 
-             'self.Ledit_replace.setText({n})') : (
-             EMPTY_STR, repr(''' What is this, the Spanish Inquisition? ''')),
-        
-    }
     
     def __init__(self, parent=None, add_sub_tab = None):
         super(ui_RegExp, self).__init__(parent)
         self.setupUi()
+        self.std_settings = {
+        ('self.settings_ledit_regexp_text', 'self.Ledit_regexp.setText'):(
+             [], [r'''([a-zA-Z']+\s)+?expect(.*?)(the )*Spanish '''
+                        r'''Inquisition(!|.)''']),
+        
+        ('self.settings_ledit_replace_text', 
+             'self.Ledit_replace.setText') : (
+             [], [''' What is this, the Spanish Inquisition? ''']),
+        
+        }
     
+    def settings_ledit_regexp_text(self):
+        return str(self.Ledit_regexp_text())
+    
+    def settings_ledit_replace_text(self):
+        return str(self.Ledit_replace.text())
+        
     def setupUi(self):
         vbox = QtGui.QVBoxLayout()
         
@@ -76,21 +82,27 @@ class ui_RegExp(StdWidget):
     
 class ui_RexpFiles_Folder(StdWidget):
     _NAME_ = 'REG_EXP_FOLDER'
-    std_settings = {
-        ('repr(str(self.Ledit_folder.text()))', 
-            'self.Ledit_folder.setText({n})') : (repr(''), repr('')),        
-        
-        ('self.CBox_recurse.isChecked()', 
-            'self.CBox_recurse.setChecked({n})' ): (repr(''), True),
-        
-        ('repr(str(self.Ledit_recurse.text()))',
-            'self.Ledit_recurse.setText({n})') : (repr(''), repr('')),
-    }
     
     def __init__(self, parent=None):
         super(ui_RexpFiles_Folder, self).__init__(parent)
         self.setupUi()
+        self.std_settings = {
+        ('self.settings_ledit_folder_text', 
+         'self.Ledit_folder.setText') : ([], ['']),        
+        
+        ('self.CBox_recurse.isChecked', 
+            'self.CBox_recurse.setChecked' ): ([], [True]),
+        
+        ('self.settings_ledit_recurse_text',
+             'self.Ledit_recurse.setText') : ([], ['']),
+        }
         self.setup_signals()
+    
+    def settings_ledit_folder_text(self):
+        return str(self.Ledit_folder.text())
+    
+    def settings_ledit_recurse_text(self):
+        return str(self.Ledit_recurse.text())
     
     def setup_signals(self):
         self.But_folder.pressed.connect(self.select_folder)
@@ -138,14 +150,14 @@ class ui_RexpFiles_Folder(StdWidget):
         
 class ui_RexpFilesTab(StdWidget):
     _NAME_ = 'REG_EXP_PART_FILES'
-    std_settings = {
-        ('self.Radio_match.isChecked()',
-            'self.Radio_match.setChecked({n})') : (repr(''), True),
-    }
     def __init__(self, Folder, parent=None, create_child_tab = None):
         super(ui_RexpFilesTab, self).__init__(parent)
         self.Folder = Folder
         self.setupUi()
+        self.std_settings = {
+        ('self.Radio_match.isChecked',
+            'self.Radio_match.setChecked' ): ([], [True]),
+        }
         self.setup_signals()
     
     def setup_signals(self):
@@ -208,10 +220,12 @@ class ui_RexpFilesTab(StdWidget):
     
 class ui_RexpTextTab(StdWidget):
     _NAME_ = 'REG_EXP_PART_TEXT'
-    std_settings = {
-        ('repr(self.getDeformated())',
-            'self.setText({n})') : ( repr(''),
-        repr('''talking about expecting the Spanish Inquisition in the '''
+
+    def __init__(self, parent=None):
+        super(ui_RexpTextTab, self).__init__(parent)
+        self.std_settings = {
+        ('self.getDeformated', 'self.setText') : ([],[
+        '''talking about expecting the Spanish Inquisition in the '''
         '''text below:\n''' 
         '''Chapman: I didn't expect a kind of Spanish Inquisition.\n''' 
         '''(JARRING CHORD - the cardinals burst in) \n'''
@@ -222,14 +236,11 @@ class ui_RexpTextTab(StdWidget):
         '''ruthless efficiency...and an almost fanatical devotion to the '''
         '''Pope.... Our *four*...no... *Amongst* our weapons.... Amongst '''
         '''our weaponry... are such elements as fear, surprise.... I'll '''
-        '''come in again. (Exit and exeunt)\n''')), 
+        '''come in again. (Exit and exeunt)\n''']), 
         
-        ('self.Radio_match.isChecked()',
-            'self.Radio_match.setChecked({n})') : (repr(''), True),
-    }
-
-    def __init__(self, parent=None):
-        super(ui_RexpTextTab, self).__init__(parent)
+        ('self.Radio_match.isChecked',
+            'self.Radio_match.setChecked') : ([], [True]),
+        }
         self.setupUi()
 
     def setupUi(self):
