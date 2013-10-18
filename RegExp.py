@@ -321,8 +321,8 @@ class TabCentralWidget(StdWidget):
         
         self.createTabRegExp()
         self.tab_regexp.activateTabs(self.tabs_lower)
-        self.std_settings = {('self.tabs_upper.currentIndex', 
-                         'self.tabs_upper.setCurrentIndex'): ([], [0])
+        self.std_settings = {('self.tabs_lower.currentIndex', 
+                         'self.tabs_lower.setCurrentIndex'): ([], [0])
                         } 
     
     def load_settings(self, settings):
@@ -330,7 +330,7 @@ class TabCentralWidget(StdWidget):
         assert(not self.tab_regexp.load_settings(settings))
         
     def save_settings(self, settings):
-        StdWidget.load_settings(self, settings)
+        StdWidget.save_settings(self, settings)
         assert(not self.tab_regexp.save_settings(settings))
     
     def setupTabWidgets(self):

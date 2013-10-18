@@ -43,7 +43,7 @@ class ui_RegExp(StdWidget):
         }
     
     def settings_ledit_regexp_text(self):
-        return str(self.Ledit_regexp_text())
+        return str(self.Ledit_regexp.text())
     
     def settings_ledit_replace_text(self):
         return str(self.Ledit_replace.text())
