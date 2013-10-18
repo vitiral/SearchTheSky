@@ -154,8 +154,6 @@ class ui_RexpFilesTab(StdWidget):
     def search(self):
         folder = self.Folder.get_folder()
         print 'Searching', folder
-
-        
     
     def setupUi(self):
         vbox_main = QtGui.QVBoxLayout()
@@ -211,7 +209,7 @@ class ui_RexpFilesTab(StdWidget):
 class ui_RexpTextTab(StdWidget):
     _NAME_ = 'REG_EXP_PART_TEXT'
     std_settings = {
-        ('self.getDeformated({n})',
+        ('repr(self.getDeformated())',
             'self.setText({n})') : ( repr(''),
         repr('''talking about expecting the Spanish Inquisition in the '''
         '''text below:\n''' 

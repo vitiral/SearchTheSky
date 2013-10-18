@@ -34,12 +34,13 @@ from ui.RegExp_ui import (ui_RegExp, ui_RexpFiles_Folder, ui_RexpFilesTab,
 
 
 class RegExp(ui_RegExp):
-    def __init__(self, parent = None, add_sub_tab = None):
+    def __init__(self, parent = None, add_sub_tab = None, sub_tabs = None):
         super(RegExp, self).__init__(parent)
         self._tabs_created = False
         
         self.parent = parent
         self.add_sub_tab = add_sub_tab
+        self.sub_tabs = sub_tabs
         
         if add_sub_tab:
             self.setupTabs()
@@ -50,6 +51,7 @@ class RegExp(ui_RegExp):
     def save_settings(self, application_settings):
         app_set = application_settings
         assert(not StdWidget.save_settings(self, app_set))
+        assert(not self.Folder.save_settings(app_set))
         if self._tabs_created:
             assert(not self.Tab_files.save_settings(app_set))
             assert(not self.Tab_text.save_settings(app_set))
@@ -57,6 +59,7 @@ class RegExp(ui_RegExp):
     def load_settings(self, application_settings):
         app_set = application_settings
         assert(not StdWidget.load_settings(self, app_set))
+        assert(not self.Folder.load_settings(app_set))
         if self._tabs_created:
             assert(not self.Tab_files.load_settings(app_set))
             assert(not self.Tab_text.load_settings(app_set))
@@ -310,7 +313,10 @@ class Menu(QtGui.QMenuBar):
         self.addAction(self.Options_menu.menuAction())
 
 
-class TabCentralWidget(QtGui.QWidget):
+class TabCentralWidget(StdWidget):
+    std_settings = {('self.tabs_upper.currentIndex()', 
+                         'self.tabs_upper.setCurrentIndex({n})'),('', 0)
+                        } 
     def __init__(self, parent=None):
         super(TabCentralWidget, self).__init__(parent)
         self.setupTabWidgets()
@@ -319,9 +325,11 @@ class TabCentralWidget(QtGui.QWidget):
         self.tab_regexp.activateTabs(self.tabs_lower)
     
     def load_settings(self, settings):
+        StdWidget.load_settings(self, settings)
         assert(not self.tab_regexp.load_settings(settings))
         
     def save_settings(self, settings):
+        StdWidget.load_settings(self, settings)
         assert(not self.tab_regexp.save_settings(settings))
     
     def setupTabWidgets(self):
@@ -330,7 +338,6 @@ class TabCentralWidget(QtGui.QWidget):
         tabs_upper = QtGui.QTabWidget()
         tabs_lower =  QtGui.QTabWidget()
         tabs_upper.setFixedHeight(90)
-        
         vbox = QtGui.QVBoxLayout()
         vbox.addWidget(tabs_upper)
         vbox.addWidget(tabs_lower)
@@ -346,13 +353,15 @@ class TabCentralWidget(QtGui.QWidget):
     
     def createTabRegExp(self):
         assert(self.tab_regexp == None)
-        self.tab_regexp = RegExp(add_sub_tab = self.tabs_lower.addTab)
+        self.tab_regexp = RegExp(add_sub_tab = self.tabs_lower.addTab,
+                                 sub_tabs = self.tabs_lower)
         self.tabs_upper.addTab(self.tab_regexp, "Reg Exp")
         self.tab_regexp.setEnabled(True)
 
 class SearchTheSky(QtGui.QMainWindow):
-    def __init__(self, parent=None):
+    def __init__(self, debug = False, parent=None):
         super(SearchTheSky, self).__init__(parent)
+        self._debug = debug
         self.setupUi()
         
         self.load_settings()
@@ -378,11 +387,10 @@ class SearchTheSky(QtGui.QMainWindow):
             else:
                 settings = shelve.open(SETTINGS_PATH)
             self.Tabs.load_settings(settings)
-        except Exception:
-            print "Problem loading settings. Using default. Error:"
-            print errors.get_prev_exception_str()
-            settings = dict()
-            self.Tabs.load_settings(settings)
+#            print "Problem loading settings. Using default. Error:"
+#            print errors.get_prev_exception_str()
+#            settings = dict()
+#            self.Tabs.load_settings(settings)
         finally:
             if type(settings) != dict:
                 settings.close()
@@ -406,15 +414,15 @@ class SearchTheSky(QtGui.QMainWindow):
         sys.excepthook = fake_except_hook
         self.close()
 
-def main():
+def main(debug = False):
     from PyQt4.QtCore import pyqtRemoveInputHook
     pyqtRemoveInputHook
     app = QtGui.QApplication(sys.argv)
-    ex = SearchTheSky()
+    ex = SearchTheSky(debug = debug)
     sys.exit(app.exec_())
     print QtGui.QTextEdit
 
 if __name__ == '__main__':
-    main()
+    main(debug = True)
 
     
