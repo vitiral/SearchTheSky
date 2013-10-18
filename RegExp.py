@@ -21,6 +21,7 @@ from PyQt4 import QtGui, QtCore
 import bs4
 
 from cloudtb import logtools, dbe
+from cloudtb.extra.PyQt import treeview
 from logging import DEBUG, INFO, ERROR
 log = logtools.get_logger(level = DEBUG)
 
@@ -89,8 +90,21 @@ class RexpFiles_Folder(ui_RexpFiles_Folder):
     pass
 
 class RexpFilesTab(ui_RexpFilesTab):
-    pass
+    def __init__(self, Folder, parent = None):
+        super(RexpFilesTab, self).__init__(Folder, parent = parent)
+        self.connect_signals()
 
+    def connect_signals(self):
+        self.Folder.But_find.pressed.connect(self.search)        
+        
+    def search(self):
+        folder = self.Folder.get_folder()
+        print 'Searching', folder
+        paths = researched_richtext.get_match_paths(folder)
+        nodes = treeview.get_filelist_nodes(paths)
+        self.Tree_model.clear_rows()
+        self.Tree_model.insertRows(0, nodes)
+        
 class RexpTextTab(ui_RexpTextTab):
     def __init__(self, get_regexp, get_replace, parent = None):
         super(RexpTextTab, self).__init__(parent)
@@ -204,7 +218,7 @@ class RexpTextTab(ui_RexpTextTab):
                 (richtext.KEEPIF['black-bold'], 
                  richtext.KEEPIF['red-underlined-bold']))
             deformated_str = richtext.get_str_formated_true(deformated)
-            assert(len(deformated_str) <= len(self.getText()))
+#            assert(len(deformated_str) <= len(self.getText()))
             true_pos = richtext.get_position(deformated, 
                                 visible_position = qtpos)[0]
             
@@ -268,53 +282,35 @@ from cloudtb import system, errors
 SETTINGS_FILE = '.SearchTheSky'
 SETTINGS_PATH = os.path.join(system.get_user_directory(), SETTINGS_FILE)
 
-class SearchTheSky(QtGui.QMainWindow):
-    def __init__(self, parent=None):
-        super(SearchTheSky, self).__init__(parent)
-        self.Tabs = TabCentralWidget()
-        self.setCentralWidget(self.Tabs)
-        self.resize(450, 400)
-        self.show()
+class Menu(QtGui.QMenuBar):
+    def __init__(self, reset_settings, parent = None):
+        super(Menu, self).__init__(parent)
+#        pdb.set_trace()
+        self.reset_settings = reset_settings
         
-        self.load_settings()
+        self.setupUi()
+        self.connect_signals()
     
-    def load_settings(self):
-        try:
-            settings = shelve.open(SETTINGS_PATH)
-            self.Tabs.load_settings(settings)
-        except Exception as E:
-            print "Problem loading settings. Using default. Error:"
-            print errors.get_prev_exception_str()
-            settings = dict()
-            self.Tabs.load_settings(settings)
-        finally:
-            if type(settings) != dict:
-                settings.close()
+    def connect_signals(self):
+        self.connect(self.ResetSettings, QtCore.SIGNAL("triggered()"),
+                     self.reload_settings)
     
-    def save_settings(self):
-        settings = {}
-        assert(not self.Tabs.save_settings(settings))
+    def reload_settings(self):
+        print "Reloading Settings"
+        self.reset_settings()
         
-        try:
-            sfile = shelve.open(SETTINGS_PATH)
-        except Exception:
-            print "Could not save settings Error:"
-            print errors.get_prev_exception_str()
+    def setupUi(self):
+        self.Options_menu = QtGui.QMenu(self)
+        self.Options_menu.setTitle("Options")
+#        self.Options.setCheckable(False)
+#        self.Options.setChecked(False)
+        self.ResetSettings = QtGui.QAction(self)
+        self.ResetSettings.setText("Reset Settings")
         
-        try:
-            sfile.update(settings)
-        finally:
-            sfile.close()
-        
-    def closeEvent(self, *args):
-        print 'Closing'
-        self.save_settings()
-        # prevents any kind of dbe type shenanigans to stop us
-        def fake_except_hook(*args, **kwargs):
-            print 'Exiting Application'
-        sys.excepthook = fake_except_hook
-        self.close()
-        
+        self.Options_menu.addAction(self.ResetSettings)
+        self.addAction(self.Options_menu.menuAction())
+
+
 class TabCentralWidget(QtGui.QWidget):
     def __init__(self, parent=None):
         super(TabCentralWidget, self).__init__(parent)
@@ -355,6 +351,62 @@ class TabCentralWidget(QtGui.QWidget):
         self.tabs_upper.addTab(self.tab_regexp, "Reg Exp")
         self.tab_regexp.setEnabled(True)
 
+class SearchTheSky(QtGui.QMainWindow):
+    def __init__(self, parent=None):
+        super(SearchTheSky, self).__init__(parent)
+        self.setupUi()
+        
+        self.load_settings()
+    
+    def setupUi(self):
+        self.Tabs = TabCentralWidget()
+        self.setCentralWidget(self.Tabs)
+        self.resize(450, 400)
+        self.statusbar = QtGui.QStatusBar(self)
+        self.setStatusBar(self.statusbar)
+        self.Menu = Menu(self.reset_settings, self)
+        self.setMenuBar(self.Menu)
+        
+        self.show()
+    
+    def reset_settings(self):
+        return self.load_settings({})
+        
+    def load_settings(self, set_settings = None):
+        try:
+            if set_settings != None:
+                self.settings = set_settings
+            else:
+                settings = shelve.open(SETTINGS_PATH)
+            self.Tabs.load_settings(settings)
+        except Exception as E:
+#        except ZeroDivisionError:
+            print "Problem loading settings. Using default. Error:"
+            print errors.get_prev_exception_str()
+            settings = dict()
+            self.Tabs.load_settings(settings)
+        finally:
+            if type(settings) != dict:
+                settings.close()
+    
+    def save_settings(self):
+        sfile = None
+        try:
+            sfile = shelve.open(SETTINGS_PATH)
+            sfile.clear()
+            assert(not self.Tabs.save_settings(sfile))
+        finally:
+            if sfile != None:
+                sfile.close()
+        
+    def closeEvent(self, *args):
+        print 'Closing'
+        self.save_settings()
+        # prevents any kind of dbe type shenanigans to stop us
+        def fake_except_hook(*args, **kwargs):
+            print 'Exiting Application'
+        sys.excepthook = fake_except_hook
+        self.close()
 
 def main():
     from PyQt4.QtCore import pyqtRemoveInputHook

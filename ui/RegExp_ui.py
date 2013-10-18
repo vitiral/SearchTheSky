@@ -24,16 +24,17 @@ def get_match_replace_radiobox(parent):
 #==============================================================================
 # Regular Expressions ui classes
 #==============================================================================
+EMPTY_STR = repr('')
 class ui_RegExp(StdWidget):
     _NAME_ = 'REG_EXP'
     std_settings = {
-        ('str(self.Ledit_regexp.text())' , 'self.Ledit_regexp.setText({n})'):(
-             '', repr(r'''([a-zA-Z']+\s)+?expect(.*?)(the )*Spanish '''
+        ('repr(str(self.Ledit_regexp.text()))' , 'self.Ledit_regexp.setText({n})'):(
+             EMPTY_STR, repr(r'''([a-zA-Z']+\s)+?expect(.*?)(the )*Spanish '''
                         r'''Inquisition(!|.)''')),
         
-        ('str(self.Ledit_replace.text())', 
+        ('repr(str(self.Ledit_replace.text()))', 
              'self.Ledit_replace.setText({n})') : (
-             '', repr(''' What is this, the Spanish Inquisition? ''')),
+             EMPTY_STR, repr(''' What is this, the Spanish Inquisition? ''')),
         
     }
     
@@ -76,13 +77,13 @@ class ui_RegExp(StdWidget):
 class ui_RexpFiles_Folder(StdWidget):
     _NAME_ = 'REG_EXP_FOLDER'
     std_settings = {
-        ('str(self.Ledit_folder.text())', 
+        ('repr(str(self.Ledit_folder.text()))', 
             'self.Ledit_folder.setText({n})') : (repr(''), repr('')),        
         
         ('self.CBox_recurse.isChecked()', 
             'self.CBox_recurse.setChecked({n})' ): (repr(''), True),
         
-        ('self.Ledit_recurse.text()',
+        ('repr(str(self.Ledit_recurse.text()))',
             'self.Ledit_recurse.setText({n})') : (repr(''), repr('')),
     }
     
@@ -153,6 +154,7 @@ class ui_RexpFilesTab(StdWidget):
     def search(self):
         folder = self.Folder.get_folder()
         print 'Searching', folder
+
         
     
     def setupUi(self):
@@ -169,6 +171,9 @@ class ui_RexpFilesTab(StdWidget):
         Tree_folder = QtGui.QTreeView()
         grip = QtGui.QSizeGrip(Tree_folder)
         hbox_bottom.addWidget(Tree_folder)
+        self.root_node = treeview.Node("Rootdir")
+        self.Tree_model = treeview.TableViewModel(self.root_node)
+        Tree_folder.setModel(self.Tree_model)         
         self.Tree_folder = Tree_folder
         
         # # Bottom right
@@ -206,7 +211,7 @@ class ui_RexpFilesTab(StdWidget):
 class ui_RexpTextTab(StdWidget):
     _NAME_ = 'REG_EXP_PART_TEXT'
     std_settings = {
-        ('str(self.getText())',
+        ('repr(str(self.getText()))',
             'self.setText({n})') : ('', 
         repr('''talking about expecting the Spanish Inquisition in the '''
         '''text below:\n''' 
@@ -300,3 +305,32 @@ class ui_RexpTextTab(StdWidget):
         self.TextEdit.setHtml(html)
     def setText(self, text):
         self.TextEdit.setText(text)
+        
+from cloudtb.extra.PyQt import treeview
+
+def _init_node_list(node_list):
+    '''Initializes the node list so that their do_replace variables are all
+    set to True (default).
+    do_replace == True  -- all regexp replaced
+    do_replace == None  -- some regexp replaced
+    do_replace == False -- No regexp replaced
+    '''    
+    for node in node_list:
+        if node.isdir:
+            _init_node_list(node._children)
+        else:
+            node.do_replace = True
+    
+#self.connect(lb,QtCore.SIGNAL("itemDoubleClicked (QListWidgetItem *)")
+#    ,self.someMethod) 
+
+class FileTreeModel(treeview.TableViewModel):
+    def update_files(self, fullpath_list):
+        '''deletes the current files and updates to the files on the
+        fullpath_list'''
+        self.clear_rows()
+        rows = treeview.get_filelist_nodes(fullpath_list)
+        
+        self.insertRows(0, rows)
+
+        
