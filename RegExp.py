@@ -20,7 +20,7 @@ import time
 from PyQt4 import QtGui, QtCore
 import bs4
 
-from cloudtb import logtools, dbe
+from cloudtb import logtools# , dbe
 from cloudtb.extra.PyQt import treeview
 from logging import DEBUG, INFO, ERROR
 log = logtools.get_logger(level = DEBUG)
@@ -31,7 +31,6 @@ from cloudtb.extra import researched_richtext, richtext
         
 from ui.RegExp_ui import (ui_RegExp, ui_RexpFiles_Folder, ui_RexpFilesTab, 
     ui_RexpTextTab)
-
 
 class RegExp(ui_RegExp):
     def __init__(self, parent = None, add_sub_tab = None, sub_tabs = None):
@@ -68,7 +67,9 @@ class RegExp(ui_RegExp):
         if self._tabs_created:
             log(INFO, "Tabs attempted to be created a second time")
             return
-        self.Tab_files = RexpFilesTab(self.Folder)
+        self.Tab_files = RexpFilesTab(self.Folder, 
+                                      None, # self.get_regexp_folder
+                                      self.get_regexp)
         self.Tab_text = RexpTextTab(self.get_regexp, self.get_replace)
         self._tabs_created = True
     
@@ -93,21 +94,63 @@ class RexpFiles_Folder(ui_RexpFiles_Folder):
     pass
 
 class RexpFilesTab(ui_RexpFilesTab):
-    def __init__(self, Folder, parent = None):
+    def __init__(self, Folder, get_regexp_folder, get_regexp_file, 
+                 parent = None):
         super(RexpFilesTab, self).__init__(Folder, parent = parent)
+        self.get_regexp_folder = get_regexp_folder
+        self.get_regexp_file = get_regexp_file
         self.connect_signals()
 
     def connect_signals(self):
-        self.Folder.But_find.pressed.connect(self.search)        
+        self.Folder.But_find.pressed.connect(self.search)    
+        
+#        QtCore.QObject.connect(self.Tree_model, 
+#            QtCore.SIGNAL("itemDoubleClicked(QTreeWidgetItem *,int)"), 
+#            self.tree_item_dclicked)
+        QtCore.QObject.connect(self.Tree_model, 
+            QtCore.SIGNAL("itemClicked(QTreeWidgetItem *,int)"), 
+            self.tree_item_clicked)
+        self.Tree_folder.doubleClicked.connect(self.tree_item_dclicked)        
+    
+    def tree_item_dclicked(self, *args):
+        print 'dclicked'    
+        
+        index = self.Tree_folder.currentIndex()
+        node = index.internalPointer()
+        
+        print node.name(), ', Repl:', node.do_replace, 
+        if node.isdir:
+            print ' , isdir'
+        else:
+            print ' , Re:', node.researched
+            # need to load file, regexp, etc
+            if node.researched == None:
+                with open(node.full_path) as f:
+                    text = f.read()
+                node.researched = textools.re_search(self.get_regexp_file(),
+                    text)
+            html_list = (researched_richtext.
+                re_search_format_html(node.researched))
+            str_html = richtext.get_str_formated_html(html_list)
+            self.TextBrowser.setHtml(str_html)
+        
+    def tree_item_clicked(self, *args):
+        print 'clicked'
         
     def search(self):
         folder = self.Folder.get_folder()
         print 'Searching', folder
-        paths = researched_richtext.get_match_paths(folder)
-        nodes = treeview.get_filelist_nodes(paths)
+        pdb.set_trace()
+        paths = researched_richtext.get_match_paths(folder, 
+                                text_regexp = self.get_regexp_file()
+#                                file_regexp = self.get_regexp_folder(), 
+                                                    )
         self.Tree_model.clear_rows()
-        self.Tree_model.insertRows(0, nodes)
-        
+        if not paths:
+            print 'No File Match Found'
+            return
+        self.Tree_model.update_files(paths)
+
 class RexpTextTab(ui_RexpTextTab):
     def __init__(self, get_regexp, get_replace, parent = None):
         super(RexpTextTab, self).__init__(parent)

@@ -163,10 +163,6 @@ class ui_RexpFilesTab(StdWidget):
     def setup_signals(self):
         self.Folder.But_find.pressed.connect(self.search)
     
-    def search(self):
-        folder = self.Folder.get_folder()
-        print 'Searching', folder
-    
     def setupUi(self):
         vbox_main = QtGui.QVBoxLayout()
         
@@ -182,7 +178,7 @@ class ui_RexpFilesTab(StdWidget):
         grip = QtGui.QSizeGrip(Tree_folder)
         hbox_bottom.addWidget(Tree_folder)
         self.root_node = treeview.Node("Rootdir")
-        self.Tree_model = treeview.TableViewModel(self.root_node)
+        self.Tree_model = FileTreeModel(self.root_node)
         Tree_folder.setModel(self.Tree_model)         
         self.Tree_folder = Tree_folder
         
@@ -240,7 +236,11 @@ class ui_RexpTextTab(StdWidget):
         
         ('self.Radio_match.isChecked',
             'self.Radio_match.setChecked') : ([], [True]),
+        
+        ('self.Radio_replace.isChecked',
+            'self.Radio_replace.setChecked') : ([], [False]),
         }
+        
         self.setupUi()
 
     def setupUi(self):
@@ -326,19 +326,23 @@ class ui_RexpTextTab(StdWidget):
         
 from cloudtb.extra.PyQt import treeview
 
-def _init_node_list(node_list):
+def init_nodes(nodes):
     '''Initializes the node list so that their do_replace variables are all
     set to True (default).
-    do_replace == True  -- all regexp replaced
-    do_replace == None  -- some regexp replaced
-    do_replace == False -- No regexp replaced
+        do_replace == True  -- all regexp replaced
+        do_replace == None  -- some regexp replaced
+        do_replace == False -- No regexp replaced
+        
+    Aldo initialzes researched to None for files
     '''    
-    for node in node_list:
-        if node.isdir:
-            _init_node_list(node._children)
-        else:
-            node.do_replace = True
-    
+    for n in nodes:
+        n.do_replace = True
+        if not n.isdir:
+            n.researched = None
+        if n._children:
+            init_nodes(n._children)
+    return nodes
+            
 #self.connect(lb,QtCore.SIGNAL("itemDoubleClicked (QListWidgetItem *)")
 #    ,self.someMethod) 
 
@@ -347,8 +351,9 @@ class FileTreeModel(treeview.TableViewModel):
         '''deletes the current files and updates to the files on the
         fullpath_list'''
         self.clear_rows()
-        rows = treeview.get_filelist_nodes(fullpath_list)
-        
-        self.insertRows(0, rows)
+        nodes = treeview.get_filelist_nodes(fullpath_list)
+        nodes = init_nodes(nodes)
+        if nodes:
+            self.insertRows(0, nodes)
 
         
