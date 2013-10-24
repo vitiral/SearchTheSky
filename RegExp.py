@@ -175,6 +175,7 @@ class RexpTextTab(ui_RexpTextTab):
         self.get_replace = get_replace
         
         self._disable_signals = False
+        self._cached_deformated = None
         self._update = True
         
         self.connect_signals()
@@ -198,9 +199,12 @@ class RexpTextTab(ui_RexpTextTab):
             qtpos = self.get_text_cursor_pos() # visible pos
             # print 'Got pos', qtpos
             raw_html = self.getHtml()
-            deformated = richtext.deformat_html(raw_html,
-                (richtext.KEEPIF['black-bold'], 
-                 richtext.KEEPIF['red-underlined-bold']))
+            if self._cached_deformated == None:
+                self._cached_deformated = richtext.deformat_html(raw_html,
+                    (richtext.KEEPIF['black-bold'], 
+                     richtext.KEEPIF['red-underlined-bold']))
+            deformated = self._cached_deformated
+                
             poses, obj_poses = richtext.get_position(deformated, 
                                 visible_position = qtpos, 
                                 return_list_index = True)
@@ -334,6 +338,7 @@ class RexpTextTab(ui_RexpTextTab):
             print 'new visible pos', visible_pos
             self.set_text_cursor_pos(visible_pos)
             
+            self._cached_deformated = None
             self._disable_signals = False
 
 #==============================================================================
