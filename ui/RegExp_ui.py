@@ -385,7 +385,7 @@ class ReplaceGroupsDialog(StdWidget):
         super(ReplaceGroupsDialog, self).__init__(parent = parent)
         self.std_settings = {
         ('self.settings_get_column_width', 'self.settings_set_column_width') :
-            ([], [(150, 300)]),
+            ([], [(150,)]),
 
         # TODO: This isn't resizing, not sure what to do here.
         ('self.view.size', 'self.view.resize') : (
@@ -406,17 +406,19 @@ class ReplaceGroupsDialog(StdWidget):
     
     def settings_get_column_width(self):
         cw = self.view.columnWidth
-        return cw(0), cw(1)
+        return cw(0) #, cw(1)
     
     def settings_set_column_width(self, columns):
         scw = self.view.setColumnWidth
         scw(0, columns[0])
-        scw(1, columns[1])
+        # scw(1, columns[1])
     
     def setupUi(self):
         layout = QtGui.QVBoxLayout()
         view = QtGui.QTableView()
         view.setModel(self.model)
+        view.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
+        
         layout.addWidget(view)
         self.setLayout(layout)
         self.view = view
