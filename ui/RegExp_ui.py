@@ -387,8 +387,9 @@ class ReplaceGroupsDialog(StdWidget):
         ('self.settings_get_column_width', 'self.settings_set_column_width') :
             ([], [(150, 300)]),
 
-#        ('self.view.geometry', 'self.view.setGeometry') : (
-#            [], [QtCore.QRect(10,0,450,700)] ),
+        # TODO: This isn't resizing, not sure what to do here.
+        ('self.view.size', 'self.view.resize') : (
+            [], [QtCore.QSize(450, 700)] ),
 
         ('self.isHidden', 'self.settings_show') : ([], [False]),
 

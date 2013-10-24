@@ -101,18 +101,17 @@ class RegExp(ui_RegExp):
     def setup_signals(self):
         self.Ledit_regexp.textEdited.connect(self.regexp_edited)
         self.But_replace.pressed.connect(self.toggle_popgroups)
-        # TODO: need to connect with this, not working
-        
-#        QtCore.QObject.connect(self.Replace_groups.view, 
-#            QtCore.SIGNAL("dataChanged()"), 
-#            self.tree_item_dclicked)
-        self.Replace_groups_model.dataChanged.connect(self.Tab_text.set_update)
+        # I couldn't find out how to connect to this damn thing, so I made
+        # a custom one
+        self.Replace_groups_model.dataWasChanged.connect(
+            self.Tab_text.set_update)
 
     def toggle_popgroups(self):
         if self.Replace_groups.isHidden():
             self.Replace_groups.show()
         else:
             self.Replace_groups.hide()
+    
         
     def regexp_edited(self):
         regexp = self.get_regexp()
