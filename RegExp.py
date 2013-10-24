@@ -319,8 +319,10 @@ class RexpTextTab(ui_RexpTextTab):
                 html_list = rsearch_rtext.re_search_format_html(researched)
             else:
                 print 'doing replace'
+                rlist = self.get_replace()
                 replaced = textools.re_search_replace(researched, 
-                    self.get_replace(), preview = True)
+                    rlist, preview = True)
+                print textools.format_re_search(replaced)
                 html_list = rsearch_rtext.re_search_format_html(replaced)
             
             raw_html = richtext.get_str_formated_html(

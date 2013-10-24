@@ -109,7 +109,8 @@ class ui_RegExp(StdWidget):
         return str(self.Ledit_regexp.text())
     
     def get_replace(self):
-        return str(self.Ledit_replace.text())
+        return self.Pop_groups_model.get_regex_replace() 
+#        return str(self.Ledit_replace.text())
     
 class ui_RexpFiles_Folder(StdWidget):
     _NAME_ = 'REG_EXP_FOLDER'
@@ -396,7 +397,14 @@ class ReplaceGroupsModel(tableview.TableViewModel):
         if index.column() == 1:
             return flags | QtCore.Qt.ItemIsEditable
         return flags
-        
+    
+    def get_regex_replace(self):
+        '''gets the replace list for doing regex stuff'''
+        replace = self.get_replace()
+        checked = self.get_checkboxes()
+        return [replace[ch[0]] if ch[1] else None for 
+            ch in enumerate(checked)]
+
     def get_data(self):
         return self.data
     
