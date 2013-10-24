@@ -192,9 +192,7 @@ class RexpFilesTab(ui_RexpFilesTab):
         folder = self.Folder.get_folder()
         print 'Searching', folder
         paths = researched_richtext.get_match_paths(folder, 
-                                text_regexp = self.get_regexp_file()
-#                                file_regexp = self.get_regexp_folder(), 
-                                                    )
+                                text_regexp = self.get_regexp_file())
         self.Tree_model.clear_rows()
         if not paths:
             print 'No File Match Found'
