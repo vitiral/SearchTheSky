@@ -36,14 +36,14 @@ class ui_RegExp(StdWidget):
     def __init__(self, parent=None, add_sub_tab = None):
         super(ui_RegExp, self).__init__(parent)
         self.setupUi()
-        self.Pop_groups_model.get_checkboxes
+        self.Replace_groups_model.get_checkboxes
         self.std_settings = {
         ('self.settings_ledit_regexp_text', 'self.Ledit_regexp.setText'):(
              [], [r'''([a-zA-Z']+\s)+?expect(.*?)(the )*Spanish '''
                         r'''Inquisition(!|.)''']),
         
-        ('self.Pop_groups_model.get_data',
-             'self.Pop_groups_model.set_data') : ([], [[['', '', True]]]),
+        ('self.Replace_groups_model.get_data',
+             'self.Replace_groups_model.set_data') : ([], [[['', '', True]]]),
         }
     
     def settings_ledit_regexp_text(self):
@@ -51,17 +51,13 @@ class ui_RegExp(StdWidget):
     
     def setupUi(self):
         vbox = QtGui.QVBoxLayout()
-        Pop_groups_model = ReplaceGroupsModel(data = [['','', False]], 
+        Replace_groups_model = ReplaceGroupsModel(data = [['','', False]], 
                 checkboxes=True, headers = ['Group', 'Replace'])
-        Pop_groups = QtGui.QTableView()
-        Pop_groups.setModel(Pop_groups_model)
+        Replace_groups = ReplaceGroupsDialog(Replace_groups_model)
         
-        self.Pop_groups_model = Pop_groups_model        
-        self.Pop_groups = Pop_groups
-        self.Pop_groups.setColumnWidth(0, 150)
-        self.Pop_groups.setColumnWidth(1, 300)
-        self.Pop_groups.setGeometry(100,0,450,700)
-        self.Pop_groups.show()
+        self.Replace_groups_model = Replace_groups_model
+        # needs to be added to an upper level layout
+        self.Replace_groups = Replace_groups
         
         hbox_top = QtGui.QHBoxLayout()
         label_regexp = QtGui.QLabel("Reg Exp")
@@ -92,7 +88,7 @@ class ui_RegExp(StdWidget):
         return str(self.Ledit_regexp.text())
     
     def get_replace(self):
-        return self.Pop_groups_model.get_regex_replace() 
+        return self.Replace_groups_model.get_regex_replace() 
     
 class ui_RexpFiles_Folder(StdWidget):
     _NAME_ = 'REG_EXP_FOLDER'
@@ -187,10 +183,10 @@ class ui_RexpFilesTab(StdWidget):
         
         # # # Bottom
         hbox_bottom = QtGui.QHBoxLayout()
+        splitter_bottom = QtGui.QSplitter()
         
         Tree_folder = QtGui.QTreeView()
-        grip = QtGui.QSizeGrip(Tree_folder)
-        hbox_bottom.addWidget(Tree_folder)
+        splitter_bottom.addWidget(Tree_folder)
         self.root_node = treeview.Node("Rootdir")
         self.Tree_model = FileTreeModel(self.root_node)
         Tree_folder.setModel(self.Tree_model)         
@@ -217,12 +213,18 @@ class ui_RexpFilesTab(StdWidget):
         # Bottom
         TextBrowser = QtGui.QTextBrowser()
         
-        grip = QtGui.QSizeGrip(TextBrowser)
         self.TextBrowser = TextBrowser
         
         vbox_b_right.addWidget(TextBrowser)
+        wid = QtGui.QWidget()
+        wid.setLayout(vbox_b_right)
+        splitter_bottom.addWidget(wid)
+        spolicy = QtGui.QSizePolicy()
+        spolicy.setVerticalPolicy(QtGui.QSizePolicy.Expanding)
+        spolicy.setHorizontalPolicy(QtGui.QSizePolicy.Expanding)
+        splitter_bottom.setSizePolicy(spolicy)
         
-        hbox_bottom.addLayout(vbox_b_right)
+        hbox_bottom.addWidget(splitter_bottom)
         
         # Finally, add hbox
         vbox_main.addLayout(hbox_bottom)
@@ -377,6 +379,51 @@ class FileTreeModel(treeview.TreeViewModel):
         if nodes:
             self.insertRows(0, nodes)
 
+class ReplaceGroupsDialog(StdWidget):
+    _NAME_ = "ReplaceGroupsDialog"
+    def __init__(self, model, parent = None):
+        super(ReplaceGroupsDialog, self).__init__(parent = parent)
+        self.std_settings = {
+        ('self.settings_get_column_width', 'self.settings_set_column_width') :
+            ([], [(150, 300)]),
+
+#        ('self.view.geometry', 'self.view.setGeometry') : (
+#            [], [QtCore.QRect(10,0,450,700)] ),
+
+        ('self.isHidden', 'self.settings_show') : ([], [False]),
+
+        }
+        
+        self.model = model
+        self.setupUi()
+        
+    def settings_show(self, isHidden):
+        if isHidden:
+            self.hide()
+        else:
+            self.show()
+    
+    def settings_get_column_width(self):
+        cw = self.view.columnWidth
+        return cw(0), cw(1)
+    
+    def settings_set_column_width(self, columns):
+        scw = self.view.setColumnWidth
+        scw(0, columns[0])
+        scw(1, columns[1])
+    
+    def setupUi(self):
+        layout = QtGui.QVBoxLayout()
+        view = QtGui.QTableView()
+        view.setModel(self.model)
+        layout.addWidget(view)
+        self.setLayout(layout)
+        self.view = view
+        self.layout = layout
+    
+    def closeEvent(self, *args):
+        print 'Closing popup'
+        
 class ReplaceGroupsModel(tableview.TableViewModel):
     def __init__(self, *args, **kwargs):
         super(ReplaceGroupsModel, self).__init__(*args, **kwargs)

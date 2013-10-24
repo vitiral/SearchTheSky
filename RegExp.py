@@ -33,11 +33,14 @@ from ui.RegExp_ui import (ui_RegExp, ui_RexpFiles_Folder, ui_RexpFilesTab,
     ui_RexpTextTab)
 
 class RegExp(ui_RegExp):
-    def __init__(self, parent = None, add_sub_tab = None, sub_tabs = None):
+    def __init__(self, parent = None, add_sub_tab = None, sub_tabs = None,
+                 parent_layout = None, main = None):
         super(RegExp, self).__init__(parent)
         self._tabs_created = False
         
+        self.main = main
         self.parent = parent
+        self.parent_layout = parent_layout
         self.add_sub_tab = add_sub_tab
         self.sub_tabs = sub_tabs
         
@@ -47,10 +50,14 @@ class RegExp(ui_RegExp):
             self.setupWidget()
         self.startTimer(200)
     
+    def setupAdditional(self):
+        self.parent_layout.addWidget(self.Replace_groups)
+        
     def save_settings(self, application_settings):
         app_set = application_settings
         assert(not StdWidget.save_settings(self, app_set))
         assert(not self.Folder.save_settings(app_set))
+        assert(not self.Replace_groups.save_settings(app_set))
         if self._tabs_created:
             assert(not self.Tab_files.save_settings(app_set))
             assert(not self.Tab_text.save_settings(app_set))
@@ -59,6 +66,7 @@ class RegExp(ui_RegExp):
         app_set = application_settings
         assert(not StdWidget.load_settings(self, app_set))
         assert(not self.Folder.load_settings(app_set))
+        assert(not self.Replace_groups.load_settings(app_set))
         if self._tabs_created:
             assert(not self.Tab_files.load_settings(app_set))
             assert(not self.Tab_text.load_settings(app_set))
@@ -75,6 +83,7 @@ class RegExp(ui_RegExp):
                                       self.get_regexp)
         self.Tab_text = RexpTextTab(self.get_regexp, self.get_replace)
         self._tabs_created = True
+        self.setupAdditional()
     
     def timerEvent(self, ev):
         self.Tab_text.check_update()
@@ -91,9 +100,20 @@ class RegExp(ui_RegExp):
     
     def setup_signals(self):
         self.Ledit_regexp.textEdited.connect(self.regexp_edited)
+        self.But_replace.pressed.connect(self.toggle_popgroups)
         # TODO: need to connect with this, not working
-        self.Pop_groups_model.dataChanged.connect(self.Tab_text.set_update)
+        
+#        QtCore.QObject.connect(self.Replace_groups.view, 
+#            QtCore.SIGNAL("dataChanged()"), 
+#            self.tree_item_dclicked)
+        self.Replace_groups_model.dataChanged.connect(self.Tab_text.set_update)
 
+    def toggle_popgroups(self):
+        if self.Replace_groups.isHidden():
+            self.Replace_groups.show()
+        else:
+            self.Replace_groups.hide()
+        
     def regexp_edited(self):
         regexp = self.get_regexp()
         try:
@@ -101,12 +121,12 @@ class RegExp(ui_RegExp):
         except Exception as E:
             print "Redited Error:", E 
         else:
-            self.Pop_groups_model.set_groups(textools.
+            self.Replace_groups_model.set_groups(textools.
                 get_regex_groups(regexp))
         self.Tab_text.set_update()
     
     def pre_close(self, *args):
-        self.Pop_groups.close()
+        self.Replace_groups.close()
         
 class RexpFiles_Folder(ui_RexpFiles_Folder):
     pass
@@ -277,7 +297,7 @@ class RexpTextTab(ui_RexpTextTab):
                 self.set_text_cursor_pos(set_visible)
             self._disable_signals = False
         
-    def set_update(self):
+    def set_update(self, *args, **kwargs):
         if not self._disable_signals:
             self._update = True
             
@@ -396,8 +416,9 @@ class Menu(QtGui.QMenuBar):
 
 class TabCentralWidget(StdWidget):
     _NAME_ = 'TAB_CENTRAL'
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, main = None):
         super(TabCentralWidget, self).__init__(parent)
+        self.main = main
         self.setupTabWidgets()
         
         self.createTabRegExp()
@@ -420,15 +441,26 @@ class TabCentralWidget(StdWidget):
     def setupTabWidgets(self):
         # Set all possible upper tabs to None
         self.tab_regexp = None
-        tabs_upper = QtGui.QTabWidget()
-        tabs_lower =  QtGui.QTabWidget()
-        tabs_upper.setFixedHeight(90)
+        
         vbox = QtGui.QVBoxLayout()
+        
+        tabs_upper = QtGui.QTabWidget()
+        tabs_upper.setFixedHeight(90)
         vbox.addWidget(tabs_upper)
-        vbox.addWidget(tabs_lower)
+        
+        splitter_lower = QtGui.QSplitter()
+        spolicy = QtGui.QSizePolicy()
+        spolicy.setVerticalPolicy(QtGui.QSizePolicy.Expanding)
+        spolicy.setHorizontalPolicy(QtGui.QSizePolicy.Expanding)
+        splitter_lower.setSizePolicy(spolicy)
+        
+        tabs_lower =  QtGui.QTabWidget()
+        splitter_lower.addWidget(tabs_lower)
+        vbox.addWidget(splitter_lower)
         
         self.setLayout(vbox)
-        self._layout = vbox
+        self.splitter_lower = splitter_lower
+        self.vbox = vbox
         self.tabs_upper = tabs_upper
         self.tabs_lower = tabs_lower
         
@@ -439,7 +471,9 @@ class TabCentralWidget(StdWidget):
     def createTabRegExp(self):
         assert(self.tab_regexp == None)
         self.tab_regexp = RegExp(add_sub_tab = self.tabs_lower.addTab,
-                                 sub_tabs = self.tabs_lower)
+                                 sub_tabs = self.tabs_lower,
+                                 parent_layout = self.splitter_lower,
+                                 main = self.main)
         self.tabs_upper.addTab(self.tab_regexp, "Reg Exp")
         self.tab_regexp.setEnabled(True)
 
@@ -453,7 +487,7 @@ class SearchTheSky(QtGui.QMainWindow, SearchTheSky_ui):
         self.load_settings()
     
     def setupAdditional(self):
-        self.Tabs = TabCentralWidget()
+        self.Tabs = TabCentralWidget(main = self)
         self.setCentralWidget(self.Tabs)
         self.Menu = Menu(self.reset_settings, self)
         self.setMenuBar(self.Menu)
@@ -491,7 +525,6 @@ class SearchTheSky(QtGui.QMainWindow, SearchTheSky_ui):
     def closeEvent(self, *args):
         print 'Closing'
         self.save_settings()
-        self.Tabs.pre_close()
         # prevents any kind of dbe type shenanigans to stop us
         def fake_except_hook(*args, **kwargs):
             print 'Exiting Application'
