@@ -91,7 +91,8 @@ class RegExp(ui_RegExp):
     
     def setup_signals(self):
         self.Ledit_regexp.textEdited.connect(self.regexp_edited)
-        self.Ledit_replace.textEdited.connect(self.Tab_text.set_update)
+        # TODO: need to connect with this, not working
+        self.Pop_groups_model.dataChanged.connect(self.Tab_text.set_update)
 
     def regexp_edited(self):
         regexp = self.get_regexp()
@@ -116,6 +117,7 @@ class RexpFilesTab(ui_RexpFilesTab):
         super(RexpFilesTab, self).__init__(Folder, parent = parent)
         self.get_regexp_folder = get_regexp_folder
         self.get_regexp_file = get_regexp_file
+        self._node = None
         self.connect_signals()
 
     def connect_signals(self):
@@ -124,16 +126,35 @@ class RexpFilesTab(ui_RexpFilesTab):
 #        QtCore.QObject.connect(self.Tree_model, 
 #            QtCore.SIGNAL("itemDoubleClicked(QTreeWidgetItem *,int)"), 
 #            self.tree_item_dclicked)
-        QtCore.QObject.connect(self.Tree_model, 
-            QtCore.SIGNAL("itemClicked(QTreeWidgetItem *,int)"), 
-            self.tree_item_clicked)
-        self.Tree_folder.doubleClicked.connect(self.tree_item_dclicked)        
-    
+        self.Tree_folder.doubleClicked.connect(self.tree_item_dclicked)
+        
+        self.Radio_match.toggled.connect(self.update_text)
+
+    def update_text(self):
+        node = self._node
+        if node == None:
+            self.setText('')
+            return
+            
+        if self.Radio_match.isChecked():
+            html_list = (researched_richtext.
+                re_search_format_html(node.researched,
+                    show_replace = False))
+        else:
+            html_list = (researched_richtext.
+                re_search_format_html(node.researched,
+                    show_replace = True))
+        
+        str_html = richtext.get_str_formated_html(html_list)
+        self.TextBrowser.setHtml(str_html)
+
     def tree_item_dclicked(self, *args):
         print 'dclicked'    
         
         index = self.Tree_folder.currentIndex()
         node = index.internalPointer()
+        
+        self._node = node
         
         print node.name(), ', Repl:', node.do_replace, 
         if node.isdir:
@@ -146,18 +167,11 @@ class RexpFilesTab(ui_RexpFilesTab):
                     text = f.read()
                 node.researched = textools.re_search(self.get_regexp_file(),
                     text)
-            html_list = (researched_richtext.
-                re_search_format_html(node.researched))
-            str_html = richtext.get_str_formated_html(html_list)
-            self.TextBrowser.setHtml(str_html)
-        
-    def tree_item_clicked(self, *args):
-        print 'clicked'
+            self.update_text()
         
     def search(self):
         folder = self.Folder.get_folder()
         print 'Searching', folder
-        pdb.set_trace()
         paths = researched_richtext.get_match_paths(folder, 
                                 text_regexp = self.get_regexp_file()
 #                                file_regexp = self.get_regexp_folder(), 
@@ -429,25 +443,21 @@ class TabCentralWidget(StdWidget):
         self.tabs_upper.addTab(self.tab_regexp, "Reg Exp")
         self.tab_regexp.setEnabled(True)
 
-class SearchTheSky(QtGui.QMainWindow):
+from ui.SearchTheSky_ui import SearchTheSky_ui
+class SearchTheSky(QtGui.QMainWindow, SearchTheSky_ui):
     def __init__(self, debug = False, parent=None):
         super(SearchTheSky, self).__init__(parent)
         self._debug = debug
         self.setupUi()
-        
+        self.setupAdditional()
         self.load_settings()
     
-    def setupUi(self):
+    def setupAdditional(self):
         self.Tabs = TabCentralWidget()
         self.setCentralWidget(self.Tabs)
-        self.resize(450, 400)
-        self.statusbar = QtGui.QStatusBar(self)
-        self.setStatusBar(self.statusbar)
         self.Menu = Menu(self.reset_settings, self)
         self.setMenuBar(self.Menu)
         
-        self.show()
-    
     def reset_settings(self):
         return self.load_settings({})
         
@@ -457,6 +467,7 @@ class SearchTheSky(QtGui.QMainWindow):
                 settings = set_settings
             else:
                 settings = shelve.open(SETTINGS_PATH)
+            SearchTheSky_ui.load_settings(self, settings)
             self.Tabs.load_settings(settings)
 #            print "Problem loading settings. Using default. Error:"
 #            print errors.get_prev_exception_str()
@@ -471,6 +482,7 @@ class SearchTheSky(QtGui.QMainWindow):
         try:
             sfile = shelve.open(SETTINGS_PATH)
             sfile.clear()
+            SearchTheSky_ui.save_settings(self, sfile)
             assert(not self.Tabs.save_settings(sfile))
         finally:
             if sfile != None:

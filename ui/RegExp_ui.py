@@ -42,10 +42,6 @@ class ui_RegExp(StdWidget):
              [], [r'''([a-zA-Z']+\s)+?expect(.*?)(the )*Spanish '''
                         r'''Inquisition(!|.)''']),
         
-        ('self.settings_ledit_replace_text', 
-             'self.Ledit_replace.setText') : (
-             [], [''' What is this, the Spanish Inquisition? ''']),
-        
         ('self.Pop_groups_model.get_data',
              'self.Pop_groups_model.set_data') : ([], [[['', '', True]]]),
         }
@@ -53,9 +49,6 @@ class ui_RegExp(StdWidget):
     def settings_ledit_regexp_text(self):
         return str(self.Ledit_regexp.text())
     
-    def settings_ledit_replace_text(self):
-        return str(self.Ledit_replace.text())
-        
     def setupUi(self):
         vbox = QtGui.QVBoxLayout()
         Pop_groups_model = ReplaceGroupsModel(data = [['','', False]], 
@@ -76,26 +69,16 @@ class ui_RegExp(StdWidget):
         hbox_top.addWidget(label_regexp)
         hbox_top.addWidget(Ledit_regexp)
         self.Ledit_regexp = Ledit_regexp
+        But_replace = QtGui.QPushButton("Replace")
+        hbox_top.addWidget(But_replace)
+        self.But_replace = But_replace
         vbox.addLayout(hbox_top)
         
         hbox_bot = QtGui.QHBoxLayout()
-        label_replace = QtGui.QLabel("Replace")
-        Ledit_replace = QtGui.QLineEdit()
-        
-        # TODO: This isn't working. 
-        mapper = QtGui.QDataWidgetMapper()
-        mapper.setModel(Pop_groups_model)
-        mapper.addMapping(Ledit_replace, 1)
-        mapper.toFirst()
-        
-        But_replace = QtGui.QPushButton("Adv")
-        
-        hbox_bot.addWidget(label_replace)
-        hbox_bot.addWidget(Ledit_replace)
-        hbox_bot.addWidget(But_replace)
-        
-        self.Ledit_replace = Ledit_replace
-        self.But_replace = But_replace
+        label_file_regexp = QtGui.QLabel("File Name RegExp")
+        Ledit_file_regexp = QtGui.QLineEdit()
+        hbox_bot.addWidget(label_file_regexp)
+        hbox_bot.addWidget(Ledit_file_regexp)
         vbox.addLayout(hbox_bot)
         
         self.setLayout(vbox)
@@ -110,7 +93,6 @@ class ui_RegExp(StdWidget):
     
     def get_replace(self):
         return self.Pop_groups_model.get_regex_replace() 
-#        return str(self.Ledit_replace.text())
     
 class ui_RexpFiles_Folder(StdWidget):
     _NAME_ = 'REG_EXP_FOLDER'
@@ -245,6 +227,13 @@ class ui_RexpFilesTab(StdWidget):
         # Finally, add hbox
         vbox_main.addLayout(hbox_bottom)
         self.setLayout(vbox_main)
+    
+    # seting text functions
+    def setHtml(self, html):
+        self.TextBrowser.setHtml(html)
+    def setText(self, text):
+        plain_text_html = richtext.get_str_plain_html(text)
+        self.setHtml(plain_text_html)
     
 class ui_RexpTextTab(StdWidget):
     _NAME_ = 'REG_EXP_PART_TEXT'
