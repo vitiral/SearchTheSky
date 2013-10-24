@@ -1,9 +1,14 @@
 
+import pdb
 from cloudtb import logtools
 from logging import DEBUG, INFO, ERROR
 log = logtools.get_logger(level = DEBUG)
 
-from PyQt4 import QtGui
+
+from PyQt4 import QtGui, QtCore
+import itertools
+
+from cloudtb import iteration
 from cloudtb.extra.pyqt import StdWidget
 from cloudtb.extra import richtext
 
@@ -31,6 +36,7 @@ class ui_RegExp(StdWidget):
     def __init__(self, parent=None, add_sub_tab = None):
         super(ui_RegExp, self).__init__(parent)
         self.setupUi()
+        self.Pop_groups_model.get_checkboxes
         self.std_settings = {
         ('self.settings_ledit_regexp_text', 'self.Ledit_regexp.setText'):(
              [], [r'''([a-zA-Z']+\s)+?expect(.*?)(the )*Spanish '''
@@ -40,6 +46,8 @@ class ui_RegExp(StdWidget):
              'self.Ledit_replace.setText') : (
              [], [''' What is this, the Spanish Inquisition? ''']),
         
+        ('self.Pop_groups_model.get_data',
+             'self.Pop_groups_model.set_data') : ([], [[['', '', True]]]),
         }
     
     def settings_ledit_regexp_text(self):
@@ -50,6 +58,17 @@ class ui_RegExp(StdWidget):
         
     def setupUi(self):
         vbox = QtGui.QVBoxLayout()
+        Pop_groups_model = ReplaceGroupsModel(data = [['','', False]], 
+                checkboxes=True, headers = ['Group', 'Replace'])
+        Pop_groups = QtGui.QTableView()
+        Pop_groups.setModel(Pop_groups_model)
+        
+        self.Pop_groups_model = Pop_groups_model        
+        self.Pop_groups = Pop_groups
+        self.Pop_groups.setColumnWidth(0, 150)
+        self.Pop_groups.setColumnWidth(1, 300)
+        self.Pop_groups.setGeometry(100,0,450,700)
+        self.Pop_groups.show()
         
         hbox_top = QtGui.QHBoxLayout()
         label_regexp = QtGui.QLabel("Reg Exp")
@@ -62,9 +81,21 @@ class ui_RegExp(StdWidget):
         hbox_bot = QtGui.QHBoxLayout()
         label_replace = QtGui.QLabel("Replace")
         Ledit_replace = QtGui.QLineEdit()
+        
+        # TODO: This isn't working. 
+        mapper = QtGui.QDataWidgetMapper()
+        mapper.setModel(Pop_groups_model)
+        mapper.addMapping(Ledit_replace, 1)
+        mapper.toFirst()
+        
+        But_replace = QtGui.QPushButton("Adv")
+        
         hbox_bot.addWidget(label_replace)
         hbox_bot.addWidget(Ledit_replace)
+        hbox_bot.addWidget(But_replace)
+        
         self.Ledit_replace = Ledit_replace
+        self.But_replace = But_replace
         vbox.addLayout(hbox_bot)
         
         self.setLayout(vbox)
@@ -324,7 +355,7 @@ class ui_RexpTextTab(StdWidget):
         plain_text_html = richtext.get_str_plain_html(text)
         self.setHtml(plain_text_html)
         
-from cloudtb.extra.PyQt import treeview
+from cloudtb.extra.PyQt import treeview, tableview
 
 def init_nodes(nodes):
     '''Initializes the node list so that their do_replace variables are all
@@ -346,7 +377,7 @@ def init_nodes(nodes):
 #self.connect(lb,QtCore.SIGNAL("itemDoubleClicked (QListWidgetItem *)")
 #    ,self.someMethod) 
 
-class FileTreeModel(treeview.TableViewModel):
+class FileTreeModel(treeview.TreeViewModel):
     def update_files(self, fullpath_list):
         '''deletes the current files and updates to the files on the
         fullpath_list'''
@@ -356,4 +387,117 @@ class FileTreeModel(treeview.TableViewModel):
         if nodes:
             self.insertRows(0, nodes)
 
+class ReplaceGroupsModel(tableview.TableViewModel):
+    def __init__(self, *args, **kwargs):
+        super(ReplaceGroupsModel, self).__init__(*args, **kwargs)
+    
+    def role_flags(self, index):
+        flags = tableview.TableViewModel.role_flags(self, index)
+        if index.column() == 1:
+            return flags | QtCore.Qt.ItemIsEditable
+        return flags
         
+    def get_data(self):
+        return self.data
+    
+    def set_data(self, data):
+        self.data = data
+        self.reset()
+    
+    def get_groups(self):
+        return [n[0] for n in self.data]
+    
+    def set_groups(self, groups):
+        clear = len(self.data) - len(groups)
+        self._ensure_rows(len(groups))
+        if clear > 0:
+            groups += ['' for n in xrange(clear)]
+        
+        # Track old groups to their previous replace
+        # Order MATTERS here, which is why a dictionary is not used for this.
+        cur_groups = self.get_groups()
+        cur_replace = self.get_replace()
+        cur_checks = self.get_checkboxes()
+        new_replace = cur_replace[:]
+        new_checks = cur_checks[:]
+        indexes_handled = set()
+        for i, g in enumerate(groups):
+            try:
+                ind = cur_groups.index(g)
+            except ValueError:
+                pass
+            else:
+                assert(ind not in indexes_handled)
+                indexes_handled.add(ind)
+                cur_groups[ind] = None  # make sure no repeats, 
+                new_replace[i] = cur_replace[ind]
+                new_checks[i] = cur_checks[ind]
+                if ind not in indexes_handled:
+                    # delete moved value to prevent duplicates
+                    new_replace[ind] = ''
+                    new_checks[ind] = False
+        
+        for i, value in enumerate(groups):
+            self.data[i][0] = value
+            self.data[i][1] = new_replace[i]
+            self.data[i][-1] = new_checks[i]
+        
+        self.reset()
+        self._reduce_length()
+    
+    def get_replace(self):
+        return [n[1] for n in self.data]
+    
+    def set_replace(self, ray):
+        self._ensure_rows(len(ray))
+        for i in xrange(len(self.data)):
+            self.data[i][1] == ray[i]
+        self.reset()
+    
+    def get_checkboxes(self):
+        return [n[-1] for n in self.data]
+    
+    def set_checkboxes(self, checkboxes):
+        self._ensure_rows(len(checkboxes))
+        for i, value in enumerate(checkboxes):
+            self.data[i][-1] = value
+        self.reset()
+        
+    def _reduce_length(self):
+        reg = self.get_groups()
+        rep = self.get_replace()
+        reg.reverse(); rep.reverse()
+        reg = iteration.first_index_ne(reg, None)
+        rep = iteration.first_index_ne(rep, None)
+        useless = min(reg, rep)
+        self.removeRows(len(self.data) - useless - 1, useless)
+    
+    def _ensure_rows(self, _len):
+        if len(self.data) < _len:
+            self.insertRows(len(self.data), 
+                            [['','', False] for n in 
+                            xrange(_len - len(self.data))])
+
+def dev_replace_groups_model():
+    import pdb
+    import sys
+    from cloudtb import textools
+    
+    app = QtGui.QApplication(sys.argv)
+    
+    model = ReplaceGroupsModel(data = [['','', False]], checkboxes=True, 
+                headers = ['Group', 'Replace']) 
+    
+    Table = QtGui.QTableView()
+    Table.setModel(model)
+    Table.show()
+    regexp = r'''((R|r)e ?se\w*)|(((T|t)h)?is)'''
+    groups = textools.get_regex_groups(regexp)
+    print groups
+    model.set_groups(groups)
+    
+#    model.insertRows(0, data, QtCore.QModelIndex())
+    sys.exit(app.exec_())
+
+if __name__ == '__main__':
+    dev_replace_groups_model()

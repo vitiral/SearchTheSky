@@ -62,6 +62,9 @@ class RegExp(ui_RegExp):
         if self._tabs_created:
             assert(not self.Tab_files.load_settings(app_set))
             assert(not self.Tab_text.load_settings(app_set))
+        
+        self.regexp_edited()
+        self.Tab_text.set_update()
     
     def setupTabs(self):
         if self._tabs_created:
@@ -87,9 +90,23 @@ class RegExp(ui_RegExp):
         self.setup_signals()
     
     def setup_signals(self):
-        self.Ledit_regexp.textEdited.connect(self.Tab_text.set_update)
+        self.Ledit_regexp.textEdited.connect(self.regexp_edited)
         self.Ledit_replace.textEdited.connect(self.Tab_text.set_update)
 
+    def regexp_edited(self):
+        regexp = self.get_regexp()
+        try:
+            re.compile(regexp)
+        except Exception as E:
+            print "Redited Error:", E 
+        else:
+            self.Pop_groups_model.set_groups(textools.
+                get_regex_groups(regexp))
+        self.Tab_text.set_update()
+    
+    def pre_close(self, *args):
+        self.Pop_groups.close()
+        
 class RexpFiles_Folder(ui_RexpFiles_Folder):
     pass
 
@@ -376,6 +393,9 @@ class TabCentralWidget(StdWidget):
         StdWidget.save_settings(self, settings)
         assert(not self.tab_regexp.save_settings(settings))
     
+    def pre_close(self):
+        self.tab_regexp.pre_close()
+    
     def setupTabWidgets(self):
         # Set all possible upper tabs to None
         self.tab_regexp = None
@@ -452,6 +472,7 @@ class SearchTheSky(QtGui.QMainWindow):
     def closeEvent(self, *args):
         print 'Closing'
         self.save_settings()
+        self.Tabs.pre_close()
         # prevents any kind of dbe type shenanigans to stop us
         def fake_except_hook(*args, **kwargs):
             print 'Exiting Application'
