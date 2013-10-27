@@ -391,8 +391,7 @@ class ReplaceGroupsDialog(StdWidget):
         ('self.view.size', 'self.view.resize') : (
             [], [QtCore.QSize(450, 700)] ),
 
-        ('self.isHidden', 'self.settings_show') : ([], [False]),
-
+        ('self.isHidden', 'self.settings_show') : ([], [True])
         }
         
         self.model = model
@@ -425,6 +424,7 @@ class ReplaceGroupsDialog(StdWidget):
         self.layout = layout
     
     def closeEvent(self, *args):
+        print self.model.d
         print 'Closing popup'
         
 class ReplaceGroupsModel(tableview.TableViewModel):
