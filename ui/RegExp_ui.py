@@ -322,9 +322,14 @@ class ui_RexpTextTab(StdWidget):
         return self.get_text_cursor().position()
         
     def get_text_selection(self):
-        
         cursor = self.get_text_cursor()
         return cursor.selectionStart(), cursor.selectionEnd()
+    
+    def set_text_selection(self, start, end):
+        cursor = self.get_text_cursor()
+        pdb.set_trace()
+        cursor.setPosition(start, end)
+        self.TextEdit.setTextCursor(cursor)
     
     # Reading text functions
     def getText(self):
@@ -447,7 +452,7 @@ class ReplaceGroupsModel(tableview.TableViewModel):
     def get_data(self):
         return self.data
     
-    def set_data(self, data):
+    def set_data(self, data):   
         self.data = data
         self.reset()
     

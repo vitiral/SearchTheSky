@@ -228,6 +228,8 @@ class RexpTextTab(ui_RexpTextTab):
             # move to the left. If you are at the left edge, move
             # to the right + 1
             qtpos = self.get_text_cursor_pos() # visible pos
+            qtselection_start = self.get_text_selection()[0]
+            print "selection:", qtselection_start, qtpos
             # print 'Got pos', qtpos
             raw_html = self.getHtml()
             if self._cached_deformated == None:
@@ -282,8 +284,9 @@ class RexpTextTab(ui_RexpTextTab):
                 print 'cursor fine'
                 no_change = True
             print no_change, visible_add, set_true
+            set_pos = None
             if set_visible != None: # override for only at 0
-                self.set_text_cursor_pos(set_visible)
+                set_pos = set_visible
             elif not no_change:
                 set_visible = richtext.get_position(deformated,
                         true_position = set_true)[1] + visible_add
@@ -291,7 +294,15 @@ class RexpTextTab(ui_RexpTextTab):
                     # kind of a hack through trial and error. Not totally
                     # at first I thought it should just be == qtpos...
                     set_visible += 1
-                self.set_text_cursor_pos(set_visible)
+                set_pos = set_visible
+            if set_pos == None:
+                pass
+            elif qtselection_start == qtpos:
+                print 'setting pos'
+                self.set_text_cursor_pos(set_pos)
+            else:
+                print 'setting selection'
+                self.set_text_selection(qtselection_start, set_pos)
             self._disable_signals = False
         
     def set_update(self, *args, **kwargs):
