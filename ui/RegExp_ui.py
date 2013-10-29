@@ -44,7 +44,15 @@ class ui_RegExp(StdWidget):
         
         ('self.Replace_groups_model.get_data',
              'self.Replace_groups_model.set_data') : ([], [[['', '', True]]]),
+        
+        ('lambda: self._is_shown', 'self.settings_set_shown') : (
+            [], [True]),
+
         }
+    
+    def settings_set_shown(self, shown):
+        self._is_shown = not bool(shown)
+        self.toggle_replace_groups()
     
     def settings_ledit_regexp_text(self):
         return str(self.Ledit_regexp.text())

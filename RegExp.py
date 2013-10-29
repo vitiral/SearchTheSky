@@ -44,6 +44,8 @@ class RegExp(ui_RegExp):
         self.add_sub_tab = add_sub_tab
         self.sub_tabs = sub_tabs
         
+        self._is_shown = True
+        
         if add_sub_tab:
             self.setupTabs()
         else:
@@ -88,6 +90,9 @@ class RegExp(ui_RegExp):
         self._tabs_created = True
         self.setupAdditional()
     
+    def sub_tab_changed(self):
+        self.correct_show_replace_groups()
+        
     def timerEvent(self, ev):
         self.Tab_text.check_update()
     
@@ -103,17 +108,25 @@ class RegExp(ui_RegExp):
     
     def setup_signals(self):
         self.Ledit_regexp.textEdited.connect(self.regexp_edited)
-        self.But_replace.pressed.connect(self.toggle_popgroups)
+        self.But_replace.pressed.connect(self.toggle_replace_groups)
         # I couldn't find out how to connect to this damn thing, so I made
         # a custom one
         self.Replace_groups_model.dataWasChanged.connect(
             self.Tab_text.set_update)
+        self.sub_tabs.tabBar().currentChanged.connect(self.sub_tab_changed)
 
-    def toggle_popgroups(self):
-        if self.Replace_groups.isHidden():
-            self.Replace_groups.show()
+    def toggle_replace_groups(self):
+        self._is_shown = not bool(self._is_shown)
+        if self._is_shown:
+            self.show_replace()
         else:
-            self.Replace_groups.hide()
+            self.hide_replace()
+    
+    def correct_show_replace_groups(self):
+        if self._is_shown:
+            self.show_replace()
+        else:
+            self.hide_replace()
     
     def show_replace(self):
         self._is_shown = True
