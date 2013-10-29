@@ -79,9 +79,12 @@ class RegExp(ui_RegExp):
             log(INFO, "Tabs attempted to be created a second time")
             return
         self.Tab_files = RexpFilesTab(self.Folder, 
+                                      self.get_replace,
                                       None, # self.get_regexp_folder
                                       self.get_regexp)
         self.Tab_text = RexpTextTab(self.get_regexp, self.get_replace)
+        self.parent_layout.addWidget(self.Tab_files.Replace_groups)
+        
         self._tabs_created = True
         self.setupAdditional()
     
@@ -112,6 +115,25 @@ class RegExp(ui_RegExp):
         else:
             self.Replace_groups.hide()
     
+    def show_replace(self):
+        self._is_shown = True
+        ctab = self.get_tab()
+        if ctab == self.Tab_files:
+            self.Tab_files.Replace_groups.show()
+            self.Replace_groups.hide()
+        elif ctab == self.Tab_text:
+            self.Tab_files.Replace_groups.hide()
+            self.Replace_groups.show()
+        else:
+            assert(0)
+    
+    def hide_replace(self):
+        self._is_shown = False
+        self.Tab_files.Replace_groups.hide()
+        self.Replace_groups.hide()
+            
+    def get_tab(self):
+        return self.sub_tabs.currentWidget()
         
     def regexp_edited(self):
         regexp = self.get_regexp()
@@ -132,8 +154,9 @@ class RexpFiles_Folder(ui_RexpFiles_Folder):
 
 class RexpFilesTab(ui_RexpFilesTab):
     def __init__(self, Folder, get_regexp_folder, get_regexp_file, 
-                 parent = None):
-        super(RexpFilesTab, self).__init__(Folder, parent = parent)
+                 import_replace, parent = None):
+        super(RexpFilesTab, self).__init__(Folder, import_replace, 
+            parent = parent)
         self.get_regexp_folder = get_regexp_folder
         self.get_regexp_file = get_regexp_file
         self._node = None
@@ -148,7 +171,28 @@ class RexpFilesTab(ui_RexpFilesTab):
         self.Tree_folder.doubleClicked.connect(self.tree_item_dclicked)
         
         self.Radio_match.toggled.connect(self.update_text)
+        self.TextBrowser.mouseDoubleClickEvent = self.browser_dclicked
 
+    def get_html_object_selcted_info(self):
+        qtpos = self.get_text_cursor_pos()
+        html_list = self._html_list
+        pos_tup, obj_info = richtext.get_position(html_list, 
+                              visible_position = qtpos, 
+                              return_list_index = True)
+        return obj_info
+    
+    def browser_dclicked(self, *args):
+        print 'browswer dclicked'
+        index, relative_pos = self.get_html_object_selcted_info()
+        html_obj = self._html_list[index]
+        pdb.set_trace()
+    
+    def update_replaced(self):
+        pass
+    
+    def get_replace_groups(self):
+        pass
+    
     def update_text(self):
         node = self._node
         if node == None:
@@ -164,6 +208,7 @@ class RexpFilesTab(ui_RexpFilesTab):
                 re_search_format_html(node.researched,
                     show_replace = True))
         
+        self._html_list = html_list
         str_html = richtext.get_str_formated_html(html_list)
         self.TextBrowser.setHtml(str_html)
 

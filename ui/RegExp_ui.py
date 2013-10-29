@@ -160,9 +160,11 @@ class ui_RexpFiles_Folder(StdWidget):
         
 class ui_RexpFilesTab(StdWidget):
     _NAME_ = 'REG_EXP_PART_FILES'
-    def __init__(self, Folder, parent=None, create_child_tab = None):
+    def __init__(self, Folder, import_replace, parent=None, create_child_tab = None):
         super(ui_RexpFilesTab, self).__init__(parent)
         self.Folder = Folder
+        self.import_replace = import_replace
+        
         self.setupUi()
         self.std_settings = {
         ('self.Radio_match.isChecked',
@@ -172,8 +174,20 @@ class ui_RexpFilesTab(StdWidget):
     
     def setup_signals(self):
         self.Folder.But_find.pressed.connect(self.search)
-    
+
+    def get_replace_groups(self):
+        return self.Replace_groups_model.get_replace()
+        
     def setupUi(self):
+        Replace_groups_model = ReplaceGroupsModel(data = [['','', False]], 
+                checkboxes=True, headers = ['Group', 'Replace'])
+        Replace_groups = ReplaceGroupsDialog(Replace_groups_model,
+                            import_replace= self.import_replace)
+        
+        self.Replace_groups_model = Replace_groups_model
+        # needs to be added to an upper level layout
+        self.Replace_groups = Replace_groups
+        
         vbox_main = QtGui.QVBoxLayout()
         
         # # # Folder Line
@@ -212,7 +226,6 @@ class ui_RexpFilesTab(StdWidget):
         
         # Bottom
         TextBrowser = QtGui.QTextBrowser()
-        
         self.TextBrowser = TextBrowser
         
         vbox_b_right.addWidget(TextBrowser)
@@ -230,6 +243,12 @@ class ui_RexpFilesTab(StdWidget):
         vbox_main.addLayout(hbox_bottom)
         self.setLayout(vbox_main)
     
+    def get_text_cursor(self):
+        return self.TextBrowser.textCursor()
+    
+    def get_text_cursor_pos(self):
+        return self.get_text_cursor().position()
+        
     # seting text functions
     def setHtml(self, html):
         self.TextBrowser.setHtml(html)
@@ -386,7 +405,8 @@ class FileTreeModel(treeview.TreeViewModel):
 
 class ReplaceGroupsDialog(StdWidget):
     _NAME_ = "ReplaceGroupsDialog"
-    def __init__(self, model, parent = None):
+    def __init__(self, model, parent = None, import_replace = None):
+        '''import_replace = ('button text', import_replace_function)'''
         super(ReplaceGroupsDialog, self).__init__(parent = parent)
         self.std_settings = {
         ('self.settings_get_column_width', 'self.settings_set_column_width') :
@@ -399,6 +419,7 @@ class ReplaceGroupsDialog(StdWidget):
         ('self.isHidden', 'self.settings_show') : ([], [True])
         }
         
+        self.import_replace = import_replace
         self.model = model
         self.setupUi()
         
@@ -422,12 +443,22 @@ class ReplaceGroupsDialog(StdWidget):
         view = QtGui.QTableView()
         view.setModel(self.model)
         view.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
-        
         layout.addWidget(view)
+        
+        if self.import_replace:
+            But_import = QtGui.QPushButton("Import From Text")
+            But_import.pressed.connect(self.But_import_replace)
+            layout.addWidget(But_import)
+            self.But_import = But_import
+            
         self.setLayout(layout)
         self.view = view
         self.layout = layout
     
+    def But_import_replace(self):
+        replace = self.import_replace()
+        self.model.set_replace(replace)
+        
     def closeEvent(self, *args):
         print self.model.d
         print 'Closing popup'
@@ -455,6 +486,7 @@ class ReplaceGroupsModel(tableview.TableViewModel):
     def set_data(self, data):   
         self.data = data
         self.reset()
+        self.dataWasChanged.emit()
     
     def get_groups(self):
         return [n[0] for n in self.data]
@@ -494,8 +526,9 @@ class ReplaceGroupsModel(tableview.TableViewModel):
             self.data[i][1] = new_replace[i]
             self.data[i][-1] = new_checks[i]
         
-        self.reset()
         self._reduce_length()
+        self.reset()
+        self.dataWasChanged.emit()
     
     def get_replace(self):
         return [n[1] for n in self.data]
@@ -505,6 +538,7 @@ class ReplaceGroupsModel(tableview.TableViewModel):
         for i in xrange(len(self.data)):
             self.data[i][1] == ray[i]
         self.reset()
+        self.dataWasChanged.emit()
     
     def get_checkboxes(self):
         return [n[-1] for n in self.data]
@@ -514,6 +548,7 @@ class ReplaceGroupsModel(tableview.TableViewModel):
         for i, value in enumerate(checkboxes):
             self.data[i][-1] = value
         self.reset()
+        self.dataWasChanged.emit()
         
     def _reduce_length(self):
         reg = self.get_groups()
