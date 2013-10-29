@@ -296,6 +296,7 @@ class RexpTextTab(ui_RexpTextTab):
         
     def set_update(self, *args, **kwargs):
         if not self._disable_signals:
+            self._cached_deformated = None
             self._update = True
             
     def check_update(self):
