@@ -80,9 +80,6 @@ class ui_RegExp(StdWidget):
     def get_regexp(self):
         return str(self.Ledit_regexp.text())
     
-    def get_replace(self):
-        return self.Replace_groups_model.get_regex_replace() 
-    
 class ui_RexpFiles_Folder(StdWidget):
     _NAME_ = 'REG_EXP_FOLDER'
     
@@ -402,6 +399,9 @@ class ui_RexpTextTab(StdWidget):
     def clear_error(self):
         self.Label_error.hide()
     
+    def get_replace(self):
+        return self.Replace_groups_model.get_regex_replace() 
+        
     # text cursor functions
     def get_text_cursor(self):
         return self.TextEdit.textCursor()

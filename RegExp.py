@@ -75,12 +75,12 @@ class RegExp(ui_RegExp):
         if self._tabs_created:
             log(INFO, "Tabs attempted to be created a second time")
             return
+        self.Tab_text = RexpTextTab(self.get_regexp)
         self.Tab_files = RexpFilesTab(self.Folder, 
-                                      self.get_replace,
                                       None, # self.get_regexp_folder
-                                      self.get_regexp)
-        self.Tab_text = RexpTextTab(self.get_regexp, self.get_replace)
-        
+                                      self.get_regexp,
+                                      self.Tab_text.get_replace,)
+                                      
         self._tabs_created = True
     
         
@@ -213,10 +213,9 @@ class RexpFilesTab(ui_RexpFilesTab):
         self.Tree_model.update_files(paths)
 
 class RexpTextTab(ui_RexpTextTab):
-    def __init__(self, get_regexp, get_replace, parent = None):
+    def __init__(self, get_regexp, parent = None):
         super(RexpTextTab, self).__init__(parent)
         self.get_regexp = get_regexp
-        self.get_replace = get_replace
         
         self._disable_signals = False
         self._cached_deformated = None
@@ -404,7 +403,6 @@ class RexpTextTab(ui_RexpTextTab):
                 rlist = self.get_replace()
                 replaced = textools.re_search_replace(researched, 
                     rlist, preview = True)
-                print textools.format_re_search(replaced)
                 html_list = rsearch_rtext.re_search_format_html(replaced)
             
             raw_html = richtext.get_str_formated_html(
