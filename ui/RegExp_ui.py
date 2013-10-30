@@ -196,9 +196,16 @@ class ui_RexpFilesTab(StdWidget):
             self.Replace_groups.hide()
             
     def setupUi(self):
-        hbox_main = QtGui.QHBoxLayout()
+        splitter_main = QtGui.QSplitter()
+        spolicy = QtGui.QSizePolicy()
+        spolicy.setVerticalPolicy(QtGui.QSizePolicy.Expanding)
+        spolicy.setHorizontalPolicy(QtGui.QSizePolicy.Expanding)
+        splitter_main.setSizePolicy(spolicy)
+        
         vbox_main = QtGui.QVBoxLayout()
-        hbox_main.addLayout(vbox_main)
+        vbox_main_wid = QtGui.QWidget()
+        vbox_main_wid.setLayout(vbox_main)
+        splitter_main.addWidget(vbox_main_wid)
         
         # # # Folder Line
         vbox_main.addWidget(self.Folder)
@@ -262,8 +269,10 @@ class ui_RexpFilesTab(StdWidget):
         # needs to be added to an upper level layout
         self.Replace_groups = Replace_groups
         
-        hbox_main.addWidget(Replace_groups)
-        self.setLayout(hbox_main)
+        splitter_main.addWidget(Replace_groups)
+        layout = QtGui.QVBoxLayout()
+        layout.addWidget(splitter_main)
+        self.setLayout(layout)
     
     def get_text_cursor(self):
         return self.TextBrowser.textCursor()
@@ -334,8 +343,16 @@ class ui_RexpTextTab(StdWidget):
         return super(ui_RexpTextTab, self).load_settings(apset)
         
     def setupUi(self):
-        hbox_main = QtGui.QHBoxLayout()
-        vbox = QtGui.QVBoxLayout()
+        splitter_main = QtGui.QSplitter()
+        spolicy = QtGui.QSizePolicy()
+        spolicy.setVerticalPolicy(QtGui.QSizePolicy.Expanding)
+        spolicy.setHorizontalPolicy(QtGui.QSizePolicy.Expanding)
+        splitter_main.setSizePolicy(spolicy)
+        
+        vbox_main = QtGui.QVBoxLayout()
+        vbox_main_wid = QtGui.QWidget()
+        vbox_main_wid.setLayout(vbox_main)
+        splitter_main.addWidget(vbox_main_wid)
         
         hbox_top = QtGui.QHBoxLayout()
         rbox_layout, self.Radio_match, self.Radio_replace = (
@@ -347,7 +364,7 @@ class ui_RexpTextTab(StdWidget):
         hbox_top.addWidget(But_copy)
         self.But_copy = But_copy
         
-        vbox.addLayout(hbox_top)
+        vbox_main.addLayout(hbox_top)
 
         Label_error = QtGui.QLabel()
         font = QtGui.QFont()
@@ -357,7 +374,7 @@ class ui_RexpTextTab(StdWidget):
         font.setWeight(75)
         Label_error.setFont(font)
         Label_error.setWordWrap(True)
-        vbox.addWidget(Label_error)        
+        vbox_main.addWidget(Label_error)        
         Label_error.hide()
         self.Label_error = Label_error
         
@@ -365,7 +382,7 @@ class ui_RexpTextTab(StdWidget):
         TextEdit.setAcceptRichText(False)
         TextEdit.setAutoFormatting(QtGui.QTextEdit.AutoNone)
         
-        vbox.addWidget(TextEdit)
+        vbox_main.addWidget(TextEdit)
         self.TextEdit = TextEdit
         
         Replace_groups_model = ReplaceGroupsModel(data = [['','', False]], 
@@ -377,9 +394,10 @@ class ui_RexpTextTab(StdWidget):
         # needs to be added to an upper level layout
         self.Replace_groups = Replace_groups
         
-        hbox_main.addLayout(vbox)
-        hbox_main.addWidget(Replace_groups)
-        self.setLayout(hbox_main)
+        splitter_main.addWidget(Replace_groups)
+        layout = QtGui.QVBoxLayout()
+        layout.addWidget(splitter_main)
+        self.setLayout(layout)
     
     def set_replace_groups_hide(self, hide):
         self.Replace_groups.hide() if hide else self.Replace_groups.show()
@@ -420,7 +438,6 @@ class ui_RexpTextTab(StdWidget):
     
     def set_text_selection(self, start, end):
         cursor = self.get_text_cursor()
-        pdb.set_trace()
         cursor.setPosition(start, end)
         self.TextEdit.setTextCursor(cursor)
     
