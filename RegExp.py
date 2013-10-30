@@ -34,13 +34,12 @@ from ui.RegExp_ui import (ui_RegExp, ui_RexpFiles_Folder, ui_RexpFilesTab,
 
 class RegExp(ui_RegExp):
     def __init__(self, parent = None, add_sub_tab = None, sub_tabs = None,
-                 parent_layout = None, main = None):
+                 main = None):
         super(RegExp, self).__init__(parent)
         self._tabs_created = False
         
         self.main = main
         self.parent = parent
-        self.parent_layout = parent_layout
         self.add_sub_tab = add_sub_tab
         self.sub_tabs = sub_tabs
         
@@ -52,14 +51,11 @@ class RegExp(ui_RegExp):
             self.setupWidget()
         self.startTimer(200)
     
-    def setupAdditional(self):
-        self.parent_layout.addWidget(self.Replace_groups)
         
     def save_settings(self, application_settings):
         app_set = application_settings
         assert(not StdWidget.save_settings(self, app_set))
         assert(not self.Folder.save_settings(app_set))
-        assert(not self.Replace_groups.save_settings(app_set))
         if self._tabs_created:
             assert(not self.Tab_files.save_settings(app_set))
             assert(not self.Tab_text.save_settings(app_set))
@@ -68,7 +64,6 @@ class RegExp(ui_RegExp):
         app_set = application_settings
         assert(not StdWidget.load_settings(self, app_set))
         assert(not self.Folder.load_settings(app_set))
-        assert(not self.Replace_groups.load_settings(app_set))
         if self._tabs_created:
             assert(not self.Tab_files.load_settings(app_set))
             assert(not self.Tab_text.load_settings(app_set))
@@ -85,13 +80,9 @@ class RegExp(ui_RegExp):
                                       None, # self.get_regexp_folder
                                       self.get_regexp)
         self.Tab_text = RexpTextTab(self.get_regexp, self.get_replace)
-        self.parent_layout.addWidget(self.Tab_files.Replace_groups)
         
         self._tabs_created = True
-        self.setupAdditional()
     
-    def sub_tab_changed(self):
-        self.correct_show_replace_groups()
         
     def timerEvent(self, ev):
         self.Tab_text.check_update()
@@ -108,55 +99,19 @@ class RegExp(ui_RegExp):
     
     def setup_signals(self):
         self.Ledit_regexp.textEdited.connect(self.regexp_edited)
-        self.But_replace.pressed.connect(self.toggle_replace_groups)
+        self.But_replace.pressed.connect(self.But_replace_pressed)
         # I couldn't find out how to connect to this damn thing, so I made
         # a custom one
-        self.Replace_groups_model.dataWasChanged.connect(
-            self.Tab_text.set_update)
-        self.sub_tabs.tabBar().currentChanged.connect(self.sub_tab_changed)
+#        self.sub_tabs.tabBar().currentChanged.connect(self.sub_tab_changed)
 
-    def toggle_replace_groups(self):
-        self._is_shown = not bool(self._is_shown)
-        if self._is_shown:
-            self.show_replace()
-        else:
-            self.hide_replace()
+    def But_replace_pressed(self):
+        self.Tab_files.toggle_replace_groups()
+        self.Tab_text.toggle_replace_groups()
     
-    def correct_show_replace_groups(self):
-        if self._is_shown:
-            self.show_replace()
-        else:
-            self.hide_replace()
-    
-    def show_replace(self):
-        self._is_shown = True
-        ctab = self.get_tab()
-        if ctab == self.Tab_files:
-            self.Tab_files.Replace_groups.show()
-            self.Replace_groups.hide()
-        elif ctab == self.Tab_text:
-            self.Tab_files.Replace_groups.hide()
-            self.Replace_groups.show()
-        else:
-            assert(0)
-    
-    def hide_replace(self):
-        self._is_shown = False
-        self.Tab_files.Replace_groups.hide()
-        self.Replace_groups.hide()
-            
     def get_tab(self):
         return self.sub_tabs.currentWidget()
         
     def regexp_edited(self):
-        regexp = self.get_regexp()
-        try:
-            re.compile(regexp)
-        except Exception as E:
-            print "Redited Error:", E 
-        else:
-            self.Replace_groups_model.set_groups(textools.
-                get_regex_groups(regexp))
         self.Tab_text.set_update()
     
     def pre_close(self, *args):
@@ -272,12 +227,23 @@ class RexpTextTab(ui_RexpTextTab):
     def connect_signals(self):
         self.Radio_match.toggled.connect(self.set_update)
         
+        self.Replace_groups_model.dataWasChanged.connect(
+            self.set_update)
+            
         QtCore.QObject.connect(self.TextEdit, 
             QtCore.SIGNAL("cursorPositionChanged()"), self.cursor_changed)
         
         QtCore.QObject.connect(self.TextEdit, 
             QtCore.SIGNAL("textChanged()"), self.set_update)
     
+    def toggle_replace_groups(self):
+        if not self.isVisible:
+            return
+        if self.Replace_groups.isHidden():
+            self.Replace_groups.show()
+        else:
+            self.Replace_groups.hide()
+            
     def cursor_changed(self):
         if not self._disable_signals:
             self._disable_signals = True
@@ -391,6 +357,17 @@ class RexpTextTab(ui_RexpTextTab):
                                 visible_position = qtpos)[0]
             
             regexp = self.get_regexp()
+            try:
+                re.compile(regexp)
+            except Exception as E:
+                pass
+            else:
+                self.Replace_groups_model.set_groups(textools.
+                    get_regex_groups(regexp))
+            
+#            import pprint
+#            pprint.pprint(self.Replace_groups_model.data)
+            
             error = None
             # These slow it down alot and are not really useful. Just
             # display an error
@@ -539,7 +516,6 @@ class TabCentralWidget(StdWidget):
         assert(self.tab_regexp == None)
         self.tab_regexp = RegExp(add_sub_tab = self.tabs_lower.addTab,
                                  sub_tabs = self.tabs_lower,
-                                 parent_layout = self.splitter_lower,
                                  main = self.main)
         self.tabs_upper.addTab(self.tab_regexp, "Reg Exp")
         self.tab_regexp.setEnabled(True)

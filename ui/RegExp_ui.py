@@ -36,18 +36,10 @@ class ui_RegExp(StdWidget):
     def __init__(self, parent=None, add_sub_tab = None):
         super(ui_RegExp, self).__init__(parent)
         self.setupUi()
-        self.Replace_groups_model.get_checkboxes
         self.std_settings = {
         ('self.settings_ledit_regexp_text', 'self.Ledit_regexp.setText'):(
              [], [r'''([a-zA-Z']+\s)+?expect(.*?)(the )*Spanish '''
                         r'''Inquisition(!|.)''']),
-        
-        ('self.Replace_groups_model.get_data',
-             'self.Replace_groups_model.set_data') : ([], [[['', '', True]]]),
-        
-        ('lambda: self._is_shown', 'self.settings_set_shown') : (
-            [], [True]),
-
         }
     
     def settings_set_shown(self, shown):
@@ -59,13 +51,6 @@ class ui_RegExp(StdWidget):
     
     def setupUi(self):
         vbox = QtGui.QVBoxLayout()
-        Replace_groups_model = ReplaceGroupsModel(data = [['','', False]], 
-                checkboxes=True, headers = ['Group', 'Replace'])
-        Replace_groups = ReplaceGroupsDialog(Replace_groups_model)
-        
-        self.Replace_groups_model = Replace_groups_model
-        # needs to be added to an upper level layout
-        self.Replace_groups = Replace_groups
         
         hbox_top = QtGui.QHBoxLayout()
         label_regexp = QtGui.QLabel("Reg Exp")
@@ -177,26 +162,46 @@ class ui_RexpFilesTab(StdWidget):
         self.std_settings = {
         ('self.Radio_match.isChecked',
             'self.Radio_match.setChecked' ): ([], [True]),
+
+        ('self.Replace_groups_model.get_data',
+             'self.Replace_groups_model.set_data') : ([], [[['', '', True]]]),
+        
+        ('self.Replace_groups.isHidden', 
+             'self.set_replace_groups_hide') : (
+            [], [False]),
         }
+        
         self.setup_signals()
+    
+    def save_settings(self, apset):
+        assert(not self.Replace_groups.save_settings(apset))
+        return super(ui_RexpFilesTab, self).save_settings(apset)
+    
+    def load_settings(self, apset):
+        assert(not self.Replace_groups.load_settings(apset))
+        return super(ui_RexpFilesTab, self).load_settings(apset)
     
     def setup_signals(self):
         self.Folder.But_find.pressed.connect(self.search)
 
     def get_replace_groups(self):
         return self.Replace_groups_model.get_replace()
-        
+    
+    def set_replace_groups_hide(self, hide):
+        self.Replace_groups.hide() if hide else self.Replace_groups.show()
+
+    def toggle_replace_groups(self):
+        if not self.isVisible:
+            return
+        if self.Replace_groups.isHidden():
+            self.Replace_groups.show()
+        else:
+            self.Replace_groups.hide()
+            
     def setupUi(self):
-        Replace_groups_model = ReplaceGroupsModel(data = [['','', False]], 
-                checkboxes=True, headers = ['Group', 'Replace'])
-        Replace_groups = ReplaceGroupsDialog(Replace_groups_model,
-                            import_replace= self.import_replace)
-        
-        self.Replace_groups_model = Replace_groups_model
-        # needs to be added to an upper level layout
-        self.Replace_groups = Replace_groups
-        
+        hbox_main = QtGui.QHBoxLayout()
         vbox_main = QtGui.QVBoxLayout()
+        hbox_main.addLayout(vbox_main)
         
         # # # Folder Line
         vbox_main.addWidget(self.Folder)
@@ -249,7 +254,19 @@ class ui_RexpFilesTab(StdWidget):
         
         # Finally, add hbox
         vbox_main.addLayout(hbox_bottom)
-        self.setLayout(vbox_main)
+        
+        # replace groups
+        Replace_groups_model = ReplaceGroupsModel(data = [['','', False]], 
+                checkboxes=True, headers = ['Group', 'Replace'])
+        Replace_groups = ReplaceGroupsDialog(Replace_groups_model,
+                            import_replace= self.import_replace)
+        Replace_groups._NAME_ += self._NAME_
+        self.Replace_groups_model = Replace_groups_model
+        # needs to be added to an upper level layout
+        self.Replace_groups = Replace_groups
+        
+        hbox_main.addWidget(Replace_groups)
+        self.setLayout(hbox_main)
     
     def get_text_cursor(self):
         return self.TextBrowser.textCursor()
@@ -289,11 +306,38 @@ class ui_RexpTextTab(StdWidget):
         
         ('self.Radio_replace.isChecked',
             'self.Radio_replace.setChecked') : ([], [False]),
+        
+        ('self.Replace_groups_model.get_data',
+             'self.Replace_groups_model.set_data') : ([], 
+         [[
+         ["([a-zA-Z']+\\s)+?expect(.*?)(the )*Spanish Inquisition(!|.)", 
+              '', False],
+         ["[a-zA-Z']+\\s", '', False],
+         ['.*?', 'after expects', True],
+         ['the ', 'instead of the', True],
+         ['!|.', '', False]
+         ]]),
+        
+        ('self.Replace_groups.isHidden', 
+             'self.set_replace_groups_hide') : (
+            [], [False]),
+
+        
+ 
         }
         
         self.setupUi()
 
+    def save_settings(self, apset):
+        assert(not self.Replace_groups.save_settings(apset))
+        return super(ui_RexpTextTab, self).save_settings(apset)
+    
+    def load_settings(self, apset):
+        assert(not self.Replace_groups.load_settings(apset))
+        return super(ui_RexpTextTab, self).load_settings(apset)
+        
     def setupUi(self):
+        hbox_main = QtGui.QHBoxLayout()
         vbox = QtGui.QVBoxLayout()
         
         hbox_top = QtGui.QHBoxLayout()
@@ -327,8 +371,30 @@ class ui_RexpTextTab(StdWidget):
         vbox.addWidget(TextEdit)
         self.TextEdit = TextEdit
         
-        self.setLayout(vbox)
+        Replace_groups_model = ReplaceGroupsModel(data = [['','', False]], 
+                checkboxes=True, headers = ['Group', 'Replace'])
+        Replace_groups = ReplaceGroupsDialog(Replace_groups_model)
+        Replace_groups._NAME_ += self._NAME_
+        
+        self.Replace_groups_model = Replace_groups_model
+        # needs to be added to an upper level layout
+        self.Replace_groups = Replace_groups
+        
+        hbox_main.addLayout(vbox)
+        hbox_main.addWidget(Replace_groups)
+        self.setLayout(hbox_main)
     
+    def set_replace_groups_hide(self, hide):
+        self.Replace_groups.hide() if hide else self.Replace_groups.show()
+
+    def toggle_replace_groups(self):
+        if not self.isVisible:
+            return
+        if self.Replace_groups.isHidden():
+            self.Replace_groups.show()
+        else:
+            self.Replace_groups.hide()
+            
     def set_error(self, error):
         self.Label_error.setText(str(error))
         self.Label_error.show()
