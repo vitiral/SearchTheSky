@@ -65,10 +65,11 @@ class ui_RegExp(StdWidget):
         
         hbox_bot = QtGui.QHBoxLayout()
         label_file_regexp = QtGui.QLabel("File Name RegExp")
-        Ledit_file_regexp = QtGui.QLineEdit()
+        Ledit_regexp_file = QtGui.QLineEdit()
         hbox_bot.addWidget(label_file_regexp)
-        hbox_bot.addWidget(Ledit_file_regexp)
+        hbox_bot.addWidget(Ledit_regexp_file)
         vbox.addLayout(hbox_bot)
+        self.Ledit_regexp_file = Ledit_regexp_file
         
         self.setLayout(vbox)
         self._vbox = vbox
@@ -79,6 +80,9 @@ class ui_RegExp(StdWidget):
     
     def get_regexp(self):
         return str(self.Ledit_regexp.text())
+    
+    def get_regexp_file(self):
+        return str(self.Ledit_regexp_file.text())
     
 class ui_RexpFiles_Folder(StdWidget):
     _NAME_ = 'REG_EXP_FOLDER'
@@ -161,11 +165,13 @@ class ui_RexpFilesTab(StdWidget):
             'self.Radio_match.setChecked' ): ([], [True]),
 
         ('self.Replace_groups_model.get_data',
-             'self.Replace_groups_model.set_data') : ([], [[['', '', True]]]),
+             'self.Replace_groups_model.set_data') : (
+             [], [[['', 'example', True]]]),
         
         ('self.Replace_groups.isHidden', 
              'self.set_replace_groups_hide') : (
             [], [False]),
+
         }
         
         self.setup_signals()
@@ -327,9 +333,6 @@ class ui_RexpTextTab(StdWidget):
         ('self.Replace_groups.isHidden', 
              'self.set_replace_groups_hide') : (
             [], [False]),
-
-        
- 
         }
         
         self.setupUi()

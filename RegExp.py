@@ -26,7 +26,7 @@ from logging import DEBUG, INFO, ERROR
 log = logtools.get_logger(level = DEBUG)
 
 from cloudtb.extra.pyqt import StdWidget
-from cloudtb import textools
+from cloudtb import textools, iteration
 from cloudtb.extra import researched_richtext, richtext
         
 from ui.RegExp_ui import (ui_RegExp, ui_RexpFiles_Folder, ui_RexpFilesTab, 
@@ -77,8 +77,8 @@ class RegExp(ui_RegExp):
             return
         self.Tab_text = RexpTextTab(self.get_regexp)
         self.Tab_files = RexpFilesTab(self.Folder, 
-                                      None, # self.get_regexp_folder
                                       self.get_regexp,
+                                      self.get_regexp_file,
                                       self.Tab_text.get_replace,)
                                       
         self._tabs_created = True
@@ -121,12 +121,13 @@ class RexpFiles_Folder(ui_RexpFiles_Folder):
     pass
 
 class RexpFilesTab(ui_RexpFilesTab):
-    def __init__(self, Folder, get_regexp_folder, get_regexp_file, 
+    def __init__(self, Folder, get_regexp_text, get_regexp_file, 
                  import_replace, parent = None):
         super(RexpFilesTab, self).__init__(Folder, import_replace, 
             parent = parent)
-        self.get_regexp_folder = get_regexp_folder
+        self.get_regexp_text = get_regexp_text
         self.get_regexp_file = get_regexp_file
+        self.import_replace = import_replace
         self._node = None
         self.connect_signals()
 
@@ -140,7 +141,10 @@ class RexpFilesTab(ui_RexpFilesTab):
         
         self.Radio_match.toggled.connect(self.update_text)
         self.TextBrowser.mouseDoubleClickEvent = self.browser_dclicked
-
+        
+        self.Replace_groups_model.dataWasChanged.connect(
+            self.update_replaced)
+        
     def get_html_object_selcted_info(self):
         qtpos = self.get_text_cursor_pos()
         html_list = self._html_list
@@ -150,18 +154,41 @@ class RexpFilesTab(ui_RexpFilesTab):
         return obj_info
     
     def browser_dclicked(self, *args):
-        print 'browswer dclicked'
-        index, relative_pos = self.get_html_object_selcted_info()
-        html_obj = self._html_list[index]
-        pdb.set_trace()
+        print 'browswer dclicked',
+        hind, relative_pos = self.get_html_object_selcted_info()
+        html_obj = self._html_list[hind]
+        regpart = html_obj.regpart
+        # note: self._node.researched uses the same objects 
+        #   as self._html_list[item].regpart
+        print 'Regpart:', regpart
+        rind, value = regpart.get_replaced(only_self = True, get_index = True)
+        print 'rind, rep:', (rind, value)
+        assert(value != False)
+        if rind == None:
+            for i in regpart.indexes:
+                if regpart.replace_list[i] == False:
+                    regpart.replace_list[i] = None
+        else:
+            regpart.replace_list[rind] = False
+        
+        self.update_replaced()
     
-    def update_replaced(self):
-        pass
+    def update_replaced(self, no_update_text = False):
+        print "Updating Replaced"
+        if self._node == None:
+            return
+        replace_list = self.get_replace()
+        replaced = textools.re_search_replace(self._node.researched,
+                                   replace_list)
+        assert(replaced == self._node.researched)
+        if not no_update_text:
+            self.update_text()
     
-    def get_replace_groups(self):
-        pass
+    def get_replace(self):
+        return self.Replace_groups_model.get_regex_replace()
     
     def update_text(self):
+        print "Updating Text"
         node = self._node
         if node == None:
             self.setText('')
@@ -176,8 +203,12 @@ class RexpFilesTab(ui_RexpFilesTab):
                 re_search_format_html(node.researched,
                     show_replace = True))
         
+        html_list = researched_richtext.get_regpart_view(html_list, 150)
         self._html_list = html_list
+        self.update_replaced(no_update_text= True)
         str_html = richtext.get_str_formated_html(html_list)
+        
+        # TODO: Get the screen to not jump on update
         self.TextBrowser.setHtml(str_html)
 
     def tree_item_dclicked(self, *args):
@@ -197,20 +228,26 @@ class RexpFilesTab(ui_RexpFilesTab):
             if node.researched == None:
                 with open(node.full_path) as f:
                     text = f.read()
-                node.researched = textools.re_search(self.get_regexp_file(),
+                node.researched = textools.re_search(self._regexp_text,
                     text)
-            self.update_text()
+            self.update_replaced()
         
     def search(self):
         folder = self.Folder.get_folder()
         print 'Searching', folder
+        self._regexp_file = self.get_regexp_file()
+        self._regexp_text = self.get_regexp_text()
+        
         paths = researched_richtext.get_match_paths(folder, 
-                                text_regexp = self.get_regexp_file())
+                                text_regexp = self._regexp_text)
         self.Tree_model.clear_rows()
         if not paths:
             print 'No File Match Found'
             return
         self.Tree_model.update_files(paths)
+        
+        self.Replace_groups_model.set_groups(
+            textools.get_regex_groups(self._regexp_text))
 
 class RexpTextTab(ui_RexpTextTab):
     def __init__(self, get_regexp, parent = None):
