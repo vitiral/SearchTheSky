@@ -128,6 +128,8 @@ class RexpFilesTab(ui_RexpFilesTab):
         self.get_regexp_text = get_regexp_text
         self.get_regexp_file = get_regexp_file
         self.import_replace = import_replace
+        
+        self.view_chars = None
         self._node = None
         self.connect_signals()
 
@@ -161,6 +163,8 @@ class RexpFilesTab(ui_RexpFilesTab):
         # note: self._node.researched uses the same objects 
         #   as self._html_list[item].regpart
         print 'Regpart:', regpart
+        if regpart == None:
+            return
         rind, value = regpart.get_replaced(only_self = True, get_index = True)
         print 'rind, rep:', (rind, value)
         assert(value != False)
@@ -197,17 +201,17 @@ class RexpFilesTab(ui_RexpFilesTab):
         if self.Radio_match.isChecked():
             html_list = (researched_richtext.
                 re_search_format_html(node.researched,
-                    show_replace = False))
+                    show_replace = False, 
+                    view_chars = self.view_chars))
         else:
             html_list = (researched_richtext.
                 re_search_format_html(node.researched,
-                    show_replace = True))
+                    show_replace = True, 
+                    view_chars = self.view_chars))
         
-        html_list = researched_richtext.get_regpart_view(html_list, 150)
         self._html_list = html_list
         self.update_replaced(no_update_text= True)
         str_html = richtext.get_str_formated_html(html_list)
-        
         # TODO: Get the screen to not jump on update
         self.TextBrowser.setHtml(str_html)
 

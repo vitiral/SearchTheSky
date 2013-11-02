@@ -1,5 +1,8 @@
 
 import pdb
+
+import os
+
 from cloudtb import logtools
 from logging import DEBUG, INFO, ERROR
 log = logtools.get_logger(level = DEBUG)
@@ -32,7 +35,6 @@ def get_match_replace_radiobox(parent):
 EMPTY_STR = repr('')
 class ui_RegExp(StdWidget):
     _NAME_ = 'REG_EXP'
-    
     def __init__(self, parent=None, add_sub_tab = None):
         super(ui_RegExp, self).__init__(parent)
         self.setupUi()
@@ -92,7 +94,7 @@ class ui_RexpFiles_Folder(StdWidget):
         self.setupUi()
         self.std_settings = {
         ('self.settings_ledit_folder_text', 
-         'self.Ledit_folder.setText') : ([], ['']),        
+         'self.Ledit_folder.setText') : ([], [os.getcwd()]),        
         
         ('self.CBox_recurse.isChecked', 
             'self.CBox_recurse.setChecked' ): ([], [True]),
@@ -630,7 +632,7 @@ class ReplaceGroupsModel(tableview.TableViewModel):
     def set_replace(self, ray):
         self._ensure_rows(len(ray))
         for i in xrange(len(self.data)):
-            self.data[i][1] == ray[i]
+            self.data[i][1] = ray[i]
         self.reset()
         self.dataWasChanged.emit()
     
@@ -680,5 +682,42 @@ def dev_replace_groups_model():
 #    model.insertRows(0, data, QtCore.QModelIndex())
     sys.exit(app.exec_())
 
+help_items = [('Special Characters -- .*?+\\[]() etc.', 
+              'help_files/special_chars.html'),
+         ('Character Escapes -- \n\w\b etc.', 
+              'help_files/character_escapes.html'),
+         ('Extension Notation -- (?...)', 
+              'help_files/extension_notation.html')]
+help_items_dict = dict(help_items)
+
+class RegexHelp(StdWidget):
+    def __init__(self, *args, **kwargs):
+        super(RegexHelp, self).__init__(*args, **kwargs)
+        self.setupUi()
+    
+    def setupUi(self):
+        vbox = QtGui.QVBoxLayout()
+        comboBox = QtGui.QComboBox()
+        comboBox.addItems([n[0] for n in help_items])
+        vbox.addWidget(comboBox)
+        self.comboBox = comboBox
+        
+        textBrowser = QtGui.QTextBrowser()
+        vbox.addWidget(textBrowser)
+        self.textBrowser = textBrowser
+        
+        self.setLayout(vbox)
+
+    def setup_signals(self):
+        self.comboBox.currentIndexChanged.connect(self.update_browser)
+    
+    def update_browser(self):
+        fpath = help_items_dict[self.get_selection()]
+        with open(fpath) as f:
+            self.textBrowser.setHtml(f.read())
+    
+    def get_selection(self):
+        return str(self.comboBox.currentText())
+        
 if __name__ == '__main__':
     dev_replace_groups_model()
