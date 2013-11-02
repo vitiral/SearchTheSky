@@ -30,7 +30,7 @@ from cloudtb import textools, iteration
 from cloudtb.extra import researched_richtext, richtext
         
 from ui.RegExp_ui import (ui_RegExp, ui_RexpFiles_Folder, ui_RexpFilesTab, 
-    ui_RexpTextTab)
+    ui_RexpTextTab, RexpHelp)
 
 class RegExp(ui_RegExp):
     def __init__(self, parent = None, add_sub_tab = None, sub_tabs = None,
@@ -80,6 +80,7 @@ class RegExp(ui_RegExp):
                                       self.get_regexp,
                                       self.get_regexp_file,
                                       self.Tab_text.get_replace,)
+        self.Tab_help = RexpHelp()
                                       
         self._tabs_created = True
     
@@ -94,6 +95,7 @@ class RegExp(ui_RegExp):
             
         self.add_sub_tab(self.Tab_text, "Text")
         self.add_sub_tab(self.Tab_files, "Files")
+        self.add_sub_tab(self.Tab_help, "Help")
         
         self.setup_signals()
     

@@ -11,7 +11,7 @@ log = logtools.get_logger(level = DEBUG)
 from PyQt4 import QtGui, QtCore
 import itertools
 
-from cloudtb import iteration
+from cloudtb import iteration, system
 from cloudtb.extra.pyqt import StdWidget
 from cloudtb.extra import richtext
 
@@ -684,16 +684,18 @@ def dev_replace_groups_model():
 
 help_items = [('Special Characters -- .*?+\\[]() etc.', 
               'help_files/special_chars.html'),
-         ('Character Escapes -- \n\w\b etc.', 
+         ('Character Escapes -- \\n\\w\\b etc.', 
               'help_files/character_escapes.html'),
          ('Extension Notation -- (?...)', 
               'help_files/extension_notation.html')]
 help_items_dict = dict(help_items)
 
-class RegexHelp(StdWidget):
+class RexpHelp(StdWidget):
     def __init__(self, *args, **kwargs):
-        super(RegexHelp, self).__init__(*args, **kwargs)
+        super(RexpHelp, self).__init__(*args, **kwargs)
         self.setupUi()
+        self.setup_signals()
+        self.update_browser()
     
     def setupUi(self):
         vbox = QtGui.QVBoxLayout()
@@ -709,11 +711,16 @@ class RegexHelp(StdWidget):
         self.setLayout(vbox)
 
     def setup_signals(self):
+#        QtCore.QObject.connect(self.comboBox,
+#                          QtCore.SIGNAL("currentIndexChanged(int)"),
+#                          self.update_browser)    
         self.comboBox.currentIndexChanged.connect(self.update_browser)
     
-    def update_browser(self):
+    def update_browser(self, *args):
+        print "updating help"
         fpath = help_items_dict[self.get_selection()]
-        with open(fpath) as f:
+        modpath = system.module_path(get_match_replace_radiobox)
+        with open(os.path.join(os.path.split(modpath)[0], fpath)) as f:
             self.textBrowser.setHtml(f.read())
     
     def get_selection(self):
