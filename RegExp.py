@@ -240,11 +240,11 @@ class RexpFilesTab(ui_RexpFilesTab):
     def search(self):
         folder = self.Folder.get_folder()
         print 'Searching', folder
-        pdb.set_trace()
         self._regexp_file = self.get_regexp_file()
         self._regexp_text = self.get_regexp_text()
         
-        paths = researched_richtext.get_match_paths(folder, 
+        paths = researched_richtext.get_match_paths(folder,
+                                file_regexp = self._regexp_file,
                                 text_regexp = self._regexp_text)
         self.Tree_model.clear_rows()
         if not paths:

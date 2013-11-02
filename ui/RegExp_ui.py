@@ -76,9 +76,6 @@ class ui_RegExp(StdWidget):
     def get_regexp(self):
         return str(self.Ledit_regexp.text())
     
-    def get_regexp_file(self):
-        return str(self.Ledit_regexp_file.text())
-    
 class ui_RexpFiles_Folder(StdWidget):
     _NAME_ = 'REG_EXP_FOLDER'
     
@@ -167,7 +164,8 @@ class ui_RexpFilesTab(StdWidget):
         ('self.Replace_groups.isHidden', 
              'self.set_replace_groups_hide') : (
             [], [False]),
-
+        ('self.get_regexp_file',
+             'self.Ledit_regexp_file.setText') : ([], [r'.*\.py$'])
         }
         
         self.setup_signals()
@@ -196,7 +194,10 @@ class ui_RexpFilesTab(StdWidget):
             self.Replace_groups.show()
         else:
             self.Replace_groups.hide()
-            
+    
+    def get_regexp_file(self):
+        return str(self.Ledit_regexp_file.text())
+        
     def setupUi(self):
         #TODO: splitter main isn't in use anymore delete.
         splitter_main = QtGui.QSplitter()
@@ -342,6 +343,7 @@ class ui_RexpTextTab(StdWidget):
         ('self.Replace_groups.isHidden', 
              'self.set_replace_groups_hide') : (
             [], [False]),
+        
         }
         
         self.setupUi()
