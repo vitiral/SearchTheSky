@@ -51,7 +51,6 @@ class RegExp(ui_RegExp):
             self.setupWidget()
         self.startTimer(200)
     
-        
     def save_settings(self, application_settings):
         app_set = application_settings
         assert(not StdWidget.save_settings(self, app_set))
@@ -78,12 +77,10 @@ class RegExp(ui_RegExp):
         self.Tab_text = RexpTextTab(self.get_regexp)
         self.Tab_files = RexpFilesTab(self.Folder, 
                                       self.get_regexp,
-                                      self.get_regexp_file,
                                       self.Tab_text.get_replace,)
         self.Tab_help = RexpHelp()
                                       
         self._tabs_created = True
-    
         
     def timerEvent(self, ev):
         self.Tab_text.check_update()
@@ -123,12 +120,11 @@ class RexpFiles_Folder(ui_RexpFiles_Folder):
     pass
 
 class RexpFilesTab(ui_RexpFilesTab):
-    def __init__(self, Folder, get_regexp_text, get_regexp_file, 
+    def __init__(self, Folder, get_regexp_text,
                  import_replace, parent = None):
         super(RexpFilesTab, self).__init__(Folder, import_replace, 
             parent = parent)
         self.get_regexp_text = get_regexp_text
-        self.get_regexp_file = get_regexp_file
         self.import_replace = import_replace
         
         self.view_chars = None
@@ -237,10 +233,14 @@ class RexpFilesTab(ui_RexpFilesTab):
                 node.researched = textools.re_search(self._regexp_text,
                     text)
             self.update_replaced()
+    
+    def get_regexp_file(self):
+        return str(self.Ledit_regexp_file.text())
         
     def search(self):
         folder = self.Folder.get_folder()
         print 'Searching', folder
+        pdb.set_trace()
         self._regexp_file = self.get_regexp_file()
         self._regexp_text = self.get_regexp_text()
         
@@ -530,7 +530,8 @@ class TabCentralWidget(StdWidget):
         vbox = QtGui.QVBoxLayout()
         
         tabs_upper = QtGui.QTabWidget()
-        tabs_upper.setFixedHeight(90)
+        # TODO: Find a better way to make this smallish
+        tabs_upper.setFixedHeight(65)
         vbox.addWidget(tabs_upper)
         
         splitter_lower = QtGui.QSplitter()

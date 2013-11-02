@@ -42,6 +42,7 @@ class ui_RegExp(StdWidget):
         ('self.settings_ledit_regexp_text', 'self.Ledit_regexp.setText'):(
              [], [r'''([a-zA-Z']+\s)+?expect(.*?)(the )*Spanish '''
                         r'''Inquisition(!|.)''']),
+        
         }
     
     def settings_set_shown(self, shown):
@@ -64,14 +65,6 @@ class ui_RegExp(StdWidget):
         hbox_top.addWidget(But_replace)
         self.But_replace = But_replace
         vbox.addLayout(hbox_top)
-        
-        hbox_bot = QtGui.QHBoxLayout()
-        label_file_regexp = QtGui.QLabel("File Name RegExp")
-        Ledit_regexp_file = QtGui.QLineEdit()
-        hbox_bot.addWidget(label_file_regexp)
-        hbox_bot.addWidget(Ledit_regexp_file)
-        vbox.addLayout(hbox_bot)
-        self.Ledit_regexp_file = Ledit_regexp_file
         
         self.setLayout(vbox)
         self._vbox = vbox
@@ -156,7 +149,8 @@ class ui_RexpFiles_Folder(StdWidget):
         
 class ui_RexpFilesTab(StdWidget):
     _NAME_ = 'REG_EXP_PART_FILES'
-    def __init__(self, Folder, import_replace, parent=None, create_child_tab = None):
+    def __init__(self, Folder, import_replace, parent=None, 
+                 create_child_tab = None):
         super(ui_RexpFilesTab, self).__init__(parent)
         self.Folder = Folder
         self.import_replace = import_replace
@@ -204,6 +198,7 @@ class ui_RexpFilesTab(StdWidget):
             self.Replace_groups.hide()
             
     def setupUi(self):
+        #TODO: splitter main isn't in use anymore delete.
         splitter_main = QtGui.QSplitter()
         spolicy = QtGui.QSizePolicy()
         spolicy.setVerticalPolicy(QtGui.QSizePolicy.Expanding)
@@ -215,8 +210,23 @@ class ui_RexpFilesTab(StdWidget):
         vbox_main_wid.setLayout(vbox_main)
         splitter_main.addWidget(vbox_main_wid)
         
+        splitter_line_edits = QtGui.QSplitter()
+#        splitter_line_edits.setSizePolicy(spolicy)
+        
+        # File Regexp
+        hbox_fileregexp = QtGui.QHBoxLayout()
+        label_file_regexp = QtGui.QLabel("File RegExp")
+        Ledit_regexp_file = QtGui.QLineEdit()
+        hbox_fileregexp.addWidget(label_file_regexp)
+        hbox_fileregexp.addWidget(Ledit_regexp_file)
+        wid_frexp = QtGui.QWidget()
+        wid_frexp.setLayout(hbox_fileregexp)
+        splitter_line_edits.addWidget(wid_frexp)
+        self.Ledit_regexp_file = Ledit_regexp_file
+        
         # # # Folder Line
-        vbox_main.addWidget(self.Folder)
+        splitter_line_edits.addWidget(self.Folder)
+        vbox_main.addWidget(splitter_line_edits)
         
         # TODO: Want to be able to have user change sizes of the left/right
         
@@ -257,9 +267,6 @@ class ui_RexpFilesTab(StdWidget):
         wid = QtGui.QWidget()
         wid.setLayout(vbox_b_right)
         splitter_bottom.addWidget(wid)
-        spolicy = QtGui.QSizePolicy()
-        spolicy.setVerticalPolicy(QtGui.QSizePolicy.Expanding)
-        spolicy.setHorizontalPolicy(QtGui.QSizePolicy.Expanding)
         splitter_bottom.setSizePolicy(spolicy)
         
         hbox_bottom.addWidget(splitter_bottom)
