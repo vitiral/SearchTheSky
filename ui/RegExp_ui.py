@@ -507,6 +507,7 @@ class FileTreeModel(treeview.TreeViewModel):
         nodes = init_nodes(nodes)
         if nodes:
             self.insertRows(0, nodes)
+        self._rootNode.isdir = True
 
 class ReplaceGroupsDialog(StdWidget):
     _NAME_ = "ReplaceGroupsDialog"

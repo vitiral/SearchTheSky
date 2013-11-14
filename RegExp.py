@@ -145,6 +145,26 @@ class RexpFilesTab(ui_RexpFilesTab):
         self.Replace_groups_model.dataWasChanged.connect(
             self.update_replaced)
         
+        self.But_replace.pressed.connect(self.do_replace)
+    
+    def do_replace(self):
+        check = QtGui.QMessageBox.question(self, 'Replace Text',
+            "Are you sure to replace the text?", QtGui.QMessageBox.Yes | 
+            QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+        if check != QtGui.QMessageBox.Yes:
+            return
+        self._do_replace(self.Tree_model._rootNode)
+    
+    def _do_replace(self, node):
+        pdb.set_trace()
+        if node.isdir:
+            [self._do_replace(n) for n in node._children]
+        else:
+            self.init_node_researched(node)
+            replace_text = textools.get_str_researched(node.researched)
+            with open(node.full_path, 'w') as f:
+                f.write(replace_text)
+        
     def get_html_object_selcted_info(self):
         qtpos = self.get_text_cursor_pos()
         html_list = self._html_list
@@ -155,6 +175,11 @@ class RexpFilesTab(ui_RexpFilesTab):
     
     def browser_dclicked(self, *args):
         print 'browswer dclicked',
+        hbar = self.TextBrowser.horizontalScrollBar();
+        from pprint import pprint
+#        pprint(dir(hbar))
+        print hbar.value()
+
         hind, relative_pos = self.get_html_object_selcted_info()
         html_obj = self._html_list[hind]
         regpart = html_obj.regpart
@@ -211,7 +236,13 @@ class RexpFilesTab(ui_RexpFilesTab):
         self.update_replaced(no_update_text= True)
         str_html = richtext.get_str_formated_html(html_list)
         # TODO: Get the screen to not jump on update
+        
+#        hbar.triggerAction(QtGui.QAbstractSlider.setSliderPosition(pos))
         self.TextBrowser.setHtml(str_html)
+#        if st_val > hbar.maximum():
+#            hbar.setValue(hbar.maximum())
+#        else:
+#            hbar.setValue(st_val)
 
     def tree_item_dclicked(self, *args):
         print 'dclicked'    
@@ -227,12 +258,16 @@ class RexpFilesTab(ui_RexpFilesTab):
         else:
             print ' , Re:', node.researched
             # need to load file, regexp, etc
-            if node.researched == None:
-                with open(node.full_path) as f:
-                    text = f.read()
-                node.researched = textools.re_search(self._regexp_text,
-                    text)
+            self.init_node_researched(node)
             self.update_replaced()
+    
+    def init_node_researched(self, node):
+        if node.researched != None:
+            return
+        with open(node.full_path) as f:
+            text = f.read()
+        node.researched = textools.re_search(self._regexp_text,
+            text)
     
     def get_regexp_file(self):
         return str(self.Ledit_regexp_file.text())
@@ -298,15 +333,20 @@ class RexpTextTab(ui_RexpTextTab):
             print "selection:", qtselection_start, qtpos
             # print 'Got pos', qtpos
             raw_html = self.getHtml()
+            
             if self._cached_deformated == None:
                 self._cached_deformated = richtext.deformat_html(raw_html,
                     (richtext.KEEPIF['black-bold'], 
                      richtext.KEEPIF['red-underlined-bold']))
             deformated = self._cached_deformated
-                
-            poses, obj_poses = richtext.get_position(deformated, 
-                                visible_position = qtpos, 
-                                return_list_index = True)
+            
+            try:
+                poses, obj_poses = richtext.get_position(deformated, 
+                            visible_position = qtpos, 
+                            return_list_index = True)
+            except ValueError:
+                print "Not changing cursor"
+                return
             true_pos, vis_pos, html_pos = poses
             index, rel_vis_pos = obj_poses
             
@@ -364,9 +404,10 @@ class RexpTextTab(ui_RexpTextTab):
             if set_pos == None:
                 pass
             elif qtselection_start == qtpos:
-                print 'setting pos'
+                print 'setting pos', set_pos, 'from', qtpos
                 self.set_text_cursor_pos(set_pos)
             else:
+                assert(0)
                 print 'setting selection'
                 self.set_text_selection(qtselection_start, set_pos)
             self._disable_signals = False
@@ -425,7 +466,7 @@ class RexpTextTab(ui_RexpTextTab):
                     researched = textools.re_search(
                         regexp, deformated_str)
                     if len(researched) == 1 and type(researched[0]) == str:
-                        error = "No Match Found" 
+                        error = "No Match Found"
                 except re.sre_compile.error as E:
                     error = str(E)
             if error:
@@ -434,7 +475,9 @@ class RexpTextTab(ui_RexpTextTab):
                 # believe it or not, setText will add formating!           
                 # have to explicitly set html
                 self.setText(deformated_str)
-                self._disable_signals = False                
+                print 'er setting pos', true_pos
+                self.set_text_cursor_pos(true_pos)
+                self._disable_signals = False
                 return                
 
             # Set the html to the correct values
