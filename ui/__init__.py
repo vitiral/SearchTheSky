@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #     LICENSE: The GNU Public License v3 or Greater
 #
-#     Search The Sky (SearchTheSky) v0.0.1
+#     Search The Sky (SearchTheSky) v0.0.2
 #     Copyright 2013 Garrett Berg
 #     
 #     This file is part of Search The Sky, a tool that provides powerful code 
