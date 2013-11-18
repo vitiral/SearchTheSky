@@ -24,9 +24,10 @@
 import pdb
 from cloudtb import publish
 
-VERSION = '0.0.1'
+VERSION = '0.0.2'
 TITLE = 'Search The Sky'
 SUBTITLE = 'SearchTheSky'
+LICENSE = 'The GNU Public License v3 or Greater'
 publish.YOUR_LICENSE = """  
 #     LICENSE: The GNU Public License v3 or Greater
 #

@@ -35,6 +35,21 @@ setup(name= publish.SUBTITLE,
       url='http://cloudformdesign.com/products/searchthesky',
       packages = ['SearchTheSky',]+
                   ctb_packages,
-      package_dir = {'': 'publish'}
+      package_dir = {'': 'publish'},
+      license = publish.LICENSE,
+      classifiers = [
+          'Development Status :: 4 - Beta',
+          'Environment :: GUI -- Qt',
+          'Intended Audience :: End Users/Desktop',
+          'Intended Audience :: Developers',
+          'License :: {0}'.format(publish.LICENSE),
+          'Operating System :: MacOS :: MacOS X',
+          'Operating System :: Microsoft :: Windows',
+          'Operating System :: POSIX',
+          'Programming Language :: Python',
+          'Topic :: Office/Business :: File Search and Replace',
+          'Topic :: Software Development :: Code Refactoring',
+          'Topic :: Software Development :: Regular Expressions (regex)'
+          ],
      )
     
