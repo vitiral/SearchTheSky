@@ -12,6 +12,8 @@ import shelve
 from ui.SearchTheSky_ui import SearchTheSky_ui
 import RegExp
 
+from cloudtb import system
+
 SETTINGS_FILE = '.SearchTheSky'
 SETTINGS_PATH = os.path.join(system.get_user_directory(), SETTINGS_FILE)
 
@@ -67,3 +69,14 @@ class SearchTheSky(QtGui.QMainWindow, SearchTheSky_ui):
             print 'Exiting Application'
         sys.excepthook = fake_except_hook
         self.close()
+
+def main(debug = False):
+    from PyQt4.QtCore import pyqtRemoveInputHook
+    pyqtRemoveInputHook
+    app = QtGui.QApplication(sys.argv)
+    ex = SearchTheSky(debug = debug)
+    sys.exit(app.exec_())
+    print QtGui.QTextEdit
+
+if __name__ == '__main__':
+    main(debug = True)

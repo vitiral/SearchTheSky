@@ -447,9 +447,12 @@ class ui_RexpTextTab(StdWidget):
     def get_text_cursor(self):
         return self.TextEdit.textCursor()
 
-    def set_text_cursor_pos(self, value):
+    def set_text_cursor_pos(self, value, no_anchor = False):
         tc = self.get_text_cursor()
-        tc.setPosition(value, QtGui.QTextCursor.KeepAnchor)
+        if no_anchor:
+            tc.setPosition(value)
+        else:
+           tc.setPosition(value, QtGui.QTextCursor.KeepAnchor)
         self.TextEdit.setTextCursor(tc)
         
     def get_text_cursor_pos(self):

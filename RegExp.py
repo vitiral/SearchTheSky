@@ -515,7 +515,7 @@ class RexpTextTab(ui_RexpTextTab):
                 # have to explicitly set html
                 self.setText(deformated_str)
                 print 'er setting pos', true_pos
-                self.set_text_cursor_pos(true_pos)
+                self.set_text_cursor_pos(true_pos, no_anchor=True)
                 self._disable_signals = False
                 return                
 
@@ -537,7 +537,7 @@ class RexpTextTab(ui_RexpTextTab):
             visible_pos = richtext.get_position(html_list,
                     true_position = true_pos)[1]
             print 'new visible pos', visible_pos
-            self.set_text_cursor_pos(visible_pos)
+            self.set_text_cursor_pos(visible_pos, no_anchor=True)
             
             self._researched = researched
             self._html_list = html_list
@@ -642,15 +642,3 @@ class TabCentralWidget(StdWidget):
         self.tabs_upper.addTab(self.tab_regexp, "Reg Exp")
         self.tab_regexp.setEnabled(True)
 
-def main(debug = False):
-    from PyQt4.QtCore import pyqtRemoveInputHook
-    pyqtRemoveInputHook
-    app = QtGui.QApplication(sys.argv)
-    ex = SearchTheSky(debug = debug)
-    sys.exit(app.exec_())
-    print QtGui.QTextEdit
-
-if __name__ == '__main__':
-    main(debug = True)
-
-    
