@@ -21,3 +21,20 @@
 #     License along with Search The Sky.  If you can't find it,
 #     see <http://www.gnu.org/licenses/>
 
+from distutils.core import setup
+import publish
+import cloudtb
+
+ctb_packages = ['SearchTheSky.' + n for n in cloudtb.publish.ctb_packages]
+setup(name= publish.SUBTITLE,
+      version=publish.VERSION,
+      description='A Powerful code re-factoring tool for multiple programming '
+          'languages. Includes Regular Expression tools.',
+      author='Garrett Berg',
+      author_email='garrett@cloudformdesign.com',
+      url='http://cloudformdesign.com/products/searchthesky',
+      packages = ['SearchTheSky',]+
+                  ctb_packages,
+      package_dir = {'': 'publish'}
+     )
+    
