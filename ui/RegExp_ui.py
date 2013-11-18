@@ -295,7 +295,16 @@ class ui_RexpFilesTab(StdWidget):
     
     def get_text_cursor_pos(self):
         return self.get_text_cursor().position()
+    
+    def set_text_cursor_pos(self, value):
+        tc = self.get_text_cursor()
+        tc.setPosition(value)
+        self.TextBrowser.setTextCursor(tc)
+        self.TextBrowser.ensureCursorVisible()
         
+#        self.TextBrowser.verticalScrollBar()
+#        vbar.setValue(DOESNT WORK)
+    
     # seting text functions
     def setHtml(self, html):
         self.TextBrowser.setHtml(html)
@@ -440,7 +449,7 @@ class ui_RexpTextTab(StdWidget):
 
     def set_text_cursor_pos(self, value):
         tc = self.get_text_cursor()
-        tc.setPosition(value)
+        tc.setPosition(value, QtGui.QTextCursor.KeepAnchor)
         self.TextEdit.setTextCursor(tc)
         
     def get_text_cursor_pos(self):
@@ -452,7 +461,8 @@ class ui_RexpTextTab(StdWidget):
     
     def set_text_selection(self, start, end):
         cursor = self.get_text_cursor()
-        cursor.setPosition(start, end)
+        cursor.setPosition(start)
+        cursor.setPosition(end, QtGui.QTextCursor.KeepAnchor)
         self.TextEdit.setTextCursor(cursor)
     
     # Reading text functions

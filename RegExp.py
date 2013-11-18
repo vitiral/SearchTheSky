@@ -156,7 +156,6 @@ class RexpFilesTab(ui_RexpFilesTab):
         self._do_replace(self.Tree_model._rootNode)
     
     def _do_replace(self, node):
-        pdb.set_trace()
         if node.isdir:
             [self._do_replace(n) for n in node._children]
         else:
@@ -171,15 +170,11 @@ class RexpFilesTab(ui_RexpFilesTab):
         pos_tup, obj_info = richtext.get_position(html_list, 
                               visible_position = qtpos, 
                               return_list_index = True)
+        print 'qt', qtpos, 'pos tup', pos_tup
         return obj_info
     
     def browser_dclicked(self, *args):
         print 'browswer dclicked',
-        hbar = self.TextBrowser.horizontalScrollBar();
-        from pprint import pprint
-#        pprint(dir(hbar))
-        print hbar.value()
-
         hind, relative_pos = self.get_html_object_selcted_info()
         html_obj = self._html_list[hind]
         regpart = html_obj.regpart
@@ -220,7 +215,11 @@ class RexpFilesTab(ui_RexpFilesTab):
         if node == None:
             self.setText('')
             return
-            
+        
+        vbar = self.TextBrowser.verticalScrollBar()
+        st_val = vbar.value()
+        print 'vbar start', st_val
+        
         if self.Radio_match.isChecked():
             html_list = (researched_richtext.
                 re_search_format_html(node.researched,
@@ -236,13 +235,16 @@ class RexpFilesTab(ui_RexpFilesTab):
         self.update_replaced(no_update_text= True)
         str_html = richtext.get_str_formated_html(html_list)
         # TODO: Get the screen to not jump on update
-        
 #        hbar.triggerAction(QtGui.QAbstractSlider.setSliderPosition(pos))
         self.TextBrowser.setHtml(str_html)
-#        if st_val > hbar.maximum():
-#            hbar.setValue(hbar.maximum())
-#        else:
-#            hbar.setValue(st_val)
+        if st_val > vbar.maximum():
+            vbar.setValue(vbar.maximum())
+        else:
+            vbar.setValue(st_val)
+        
+        visibile_str = richtext.get_str_formated_visible(html_list)
+        if visibile_str != str(self.TextBrowser.toPlainText()):
+            print 'ERROR: visible string not equal to plain text'
 
     def tree_item_dclicked(self, *args):
         print 'dclicked'    
@@ -296,11 +298,49 @@ class RexpTextTab(ui_RexpTextTab):
         self.get_regexp = get_regexp
         
         self._disable_signals = False
-        self._cached_deformated = None
+        self._html_list = None
+        self._researched = None
         self._update = True
         
         self.connect_signals()
     
+    
+        
+    def get_html_object_selcted_info(self):
+        qtpos = self.get_text_cursor_pos()
+        html_list = self._html_list
+        pos_tup, obj_info = richtext.get_position(html_list, 
+                              visible_position = qtpos, 
+                              return_list_index = True)
+        print 'qt', qtpos, 'pos tup', pos_tup
+        return obj_info
+        
+    def browser_dclicked(self, *args):
+        print 'browswer dclicked',
+        if self.update:
+            self.check_update()
+        if self._researched == None:
+            return
+        hind, relative_pos = self.get_html_object_selcted_info()
+        html_obj = self._html_list[hind]
+        regpart = html_obj.regpart
+        # note: self._node.researched uses the same objects 
+        #   as self._html_list[item].regpart
+        print 'Regpart:', regpart
+        if regpart == None:
+            return
+        rind, value = regpart.get_replaced(only_self = True, get_index = True)
+        print 'rind, rep:', (rind, value)
+        assert(value != False)
+        if rind == None:
+            for i in regpart.indexes:
+                if regpart.replace_list[i] == False:
+                    regpart.replace_list[i] = None
+        else:
+            regpart.replace_list[rind] = False
+        
+        self.update_replaced()
+        
     def connect_signals(self):
         self.Radio_match.toggled.connect(self.set_update)
         
@@ -334,11 +374,11 @@ class RexpTextTab(ui_RexpTextTab):
             # print 'Got pos', qtpos
             raw_html = self.getHtml()
             
-            if self._cached_deformated == None:
-                self._cached_deformated = richtext.deformat_html(raw_html,
+            if self._html_list == None:
+                self._html_list = richtext.deformat_html(raw_html,
                     (richtext.KEEPIF['black-bold'], 
                      richtext.KEEPIF['red-underlined-bold']))
-            deformated = self._cached_deformated
+            deformated = self._html_list
             
             try:
                 poses, obj_poses = richtext.get_position(deformated, 
@@ -407,14 +447,13 @@ class RexpTextTab(ui_RexpTextTab):
                 print 'setting pos', set_pos, 'from', qtpos
                 self.set_text_cursor_pos(set_pos)
             else:
-                assert(0)
                 print 'setting selection'
                 self.set_text_selection(qtselection_start, set_pos)
             self._disable_signals = False
         
     def set_update(self, *args, **kwargs):
         if not self._disable_signals:
-            self._cached_deformated = None
+            self._html_list = None
             self._update = True
             
     def check_update(self):
@@ -500,7 +539,8 @@ class RexpTextTab(ui_RexpTextTab):
             print 'new visible pos', visible_pos
             self.set_text_cursor_pos(visible_pos)
             
-            self._cached_deformated = None
+            self._researched = researched
+            self._html_list = html_list
             self._disable_signals = False
 
 #==============================================================================
