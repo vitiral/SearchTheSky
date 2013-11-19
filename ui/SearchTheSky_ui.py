@@ -31,7 +31,7 @@ from PyQt4 import QtGui, QtCore
 import itertools
 
 from cloudtb import iteration
-from cloudtb.extra.pyqt import StdWidget
+from cloudtb.extra.PyQt.base_classes import StdWidget
 from cloudtb.extra import richtext
 
 class SearchTheSky_ui(StdWidget):

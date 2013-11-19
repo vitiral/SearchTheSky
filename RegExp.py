@@ -47,7 +47,7 @@ from cloudtb.extra.PyQt import treeview
 from logging import DEBUG, INFO, ERROR
 log = logtools.get_logger(level = DEBUG)
 
-from cloudtb.extra.pyqt import StdWidget
+from cloudtb.extra.PyQt.base_classes import StdWidget
 from cloudtb import textools, iteration
 from cloudtb.extra import researched_richtext, richtext
         
