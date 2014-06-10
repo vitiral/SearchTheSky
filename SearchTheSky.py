@@ -40,12 +40,12 @@ SETTINGS_FILE = '.SearchTheSky'
 SETTINGS_PATH = os.path.join(system.get_user_directory(), SETTINGS_FILE)
 
 class SearchTheSky(QtGui.QMainWindow, SearchTheSky_ui):
-    def __init__(self, debug = False, parent=None):
+    def __init__(self, debug = False, settings = None, parent=None):
         super(SearchTheSky, self).__init__(parent)
         self._debug = debug
         self.setupUi()
         self.setupAdditional()
-        self.load_settings()
+        self.load_settings(settings)
     
     def setupAdditional(self):
         self.Tabs = RegExp.TabCentralWidget(main = self)
@@ -69,6 +69,7 @@ class SearchTheSky(QtGui.QMainWindow, SearchTheSky_ui):
 #            settings = dict()
 #            self.Tabs.load_settings(settings)
         finally:
+            print "loading"
             if type(settings) != dict:
                 settings.close()
     
@@ -96,7 +97,7 @@ def main(debug = False):
     from PyQt4.QtCore import pyqtRemoveInputHook
     pyqtRemoveInputHook
     app = QtGui.QApplication(sys.argv)
-    ex = SearchTheSky(debug = debug)
+    ex = SearchTheSky(debug = debug, settings = {})
     sys.exit(app.exec_())
     print QtGui.QTextEdit
 

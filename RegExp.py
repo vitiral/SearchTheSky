@@ -384,94 +384,95 @@ class RexpTextTab(ui_RexpTextTab):
             self.Replace_groups.hide()
             
     def cursor_changed(self):
-        if not self._disable_signals:
-            self._disable_signals = True
-            self._prev_cursor = self.get_text_cursor_pos()
-            # if you are at the right redge of a formatted section, 
-            # move to the left. If you are at the left edge, move
-            # to the right + 1
-            qtpos = self.get_text_cursor_pos() # visible pos
-            qtselection_start = self.get_text_selection()[0]
-            print "selection:", qtselection_start, qtpos
-            # print 'Got pos', qtpos
-            raw_html = self.getHtml()
-            
-            if self._html_list == None:
-                self._html_list = richtext.deformat_html(raw_html,
-                    (richtext.KEEPIF['black-bold'], 
-                     richtext.KEEPIF['red-underlined-bold']))
-            deformated = self._html_list
-            
-            try:
-                poses, obj_poses = richtext.get_position(deformated, 
-                            visible_position = qtpos, 
-                            return_list_index = True)
-            except ValueError:
-                print "Not changing cursor"
-                return
-            true_pos, vis_pos, html_pos = poses
-            index, rel_vis_pos = obj_poses
-            
-            hpart = deformated[index]
-            if index > 0:
-                prev_hpart = deformated[index - 1]
-            else:
-                prev_hpart = hpart
-            vis_text = hpart.visible_text
-            true_text = hpart.true_text
-            set_true = None
-            set_visible = None
-            no_change = False
-            visible_add = 0
-            if len(true_text) == 0:
-                # we might be on the inside of formatting
-                # Check what the text is before it.
-                if qtpos != 0:
-                    poses, obj_poses = richtext.get_position(deformated, 
-                                visible_position = qtpos - 1, 
-                                return_list_index = True)
-                else:
-                    no_change = True
-                if deformated[obj_poses[0]].true_text or qtpos == 0:
-                    print 'left side'
-                    # the value before is actual text
-                    no_change = True
-                else:
-                    print 'inside'
-                    # the value before is formatting, move
-                    set_true = true_pos + 1
-            elif rel_vis_pos == 0:
-                print 'right side'
-                # We are on the right side of formatting
-                if true_pos != 0:
-                    set_true = true_pos - 1
-                    visible_add = 1
-                else:
-                    set_visible = true_pos
-            else:
-                print 'cursor fine'
-                no_change = True
-            print no_change, visible_add, set_true
-            set_pos = None
-            if set_visible != None: # override for only at 0
-                set_pos = set_visible
-            elif not no_change:
-                set_visible = richtext.get_position(deformated,
-                        true_position = set_true)[1] + visible_add
-                if set_visible == qtpos - 1:
-                    # kind of a hack through trial and error. Not totally
-                    # at first I thought it should just be == qtpos...
-                    set_visible += 1
-                set_pos = set_visible
-            if set_pos == None:
-                pass
-            elif qtselection_start == qtpos:
-                print 'setting pos', set_pos, 'from', qtpos
-                self.set_text_cursor_pos(set_pos)
-            else:
-                print 'setting selection'
-                self.set_text_selection(qtselection_start, set_pos)
-            self._disable_signals = False
+        pass
+#         if not self._disable_signals:
+#             self._disable_signals = True
+#             self._prev_cursor = self.get_text_cursor_pos()
+#             # if you are at the right redge of a formatted section, 
+#             # move to the left. If you are at the left edge, move
+#             # to the right + 1
+#             qtpos = self.get_text_cursor_pos() # visible pos
+#             qtselection_start = self.get_text_selection()[0]
+#             print "selection:", qtselection_start, qtpos
+#             # print 'Got pos', qtpos
+#             raw_html = self.getHtml()
+#              
+#             if self._html_list == None:
+#                 self._html_list = richtext.deformat_html(raw_html,
+#                     (richtext.KEEPIF['black-bold'], 
+#                      richtext.KEEPIF['red-underlined-bold']))
+#             deformated = self._html_list
+#              
+#             try:
+#                 poses, obj_poses = richtext.get_position(deformated, 
+#                             visible_position = qtpos, 
+#                             return_list_index = True)
+#             except ValueError:
+#                 print "Not changing cursor"
+#                 return
+#             true_pos, vis_pos, html_pos = poses
+#             index, rel_vis_pos = obj_poses
+#              
+#             hpart = deformated[index]
+#             if index > 0:
+#                 prev_hpart = deformated[index - 1]
+#             else:
+#                 prev_hpart = hpart
+#             vis_text = hpart.visible_text
+#             true_text = hpart.true_text
+#             set_true = None
+#             set_visible = None
+#             no_change = False
+#             visible_add = 0
+#             if len(true_text) == 0:
+#                 # we might be on the inside of formatting
+#                 # Check what the text is before it.
+#                 if qtpos != 0:
+#                     poses, obj_poses = richtext.get_position(deformated, 
+#                                 visible_position = qtpos - 1, 
+#                                 return_list_index = True)
+#                 else:
+#                     no_change = True
+#                 if deformated[obj_poses[0]].true_text or qtpos == 0:
+#                     print 'left side'
+#                     # the value before is actual text
+#                     no_change = True
+#                 else:
+#                     print 'inside'
+#                     # the value before is formatting, move
+#                     set_true = true_pos + 1
+#             elif rel_vis_pos == 0:
+#                 print 'right side'
+#                 # We are on the right side of formatting
+#                 if true_pos != 0:
+#                     set_true = true_pos - 1
+#                     visible_add = 1
+#                 else:
+#                     set_visible = true_pos
+#             else:
+#                 print 'cursor fine'
+#                 no_change = True
+#             print no_change, visible_add, set_true
+#             set_pos = None
+#             if set_visible != None: # override for only at 0
+#                 set_pos = set_visible
+#             elif not no_change:
+#                 set_visible = richtext.get_position(deformated,
+#                         true_position = set_true)[1] + visible_add
+#                 if set_visible == qtpos - 1:
+#                     # kind of a hack through trial and error. Not totally
+#                     # at first I thought it should just be == qtpos...
+#                     set_visible += 1
+#                 set_pos = set_visible
+#             if set_pos == None:
+#                 pass
+#             elif qtselection_start == qtpos:
+#                 print 'setting pos', set_pos, 'from', qtpos
+#                 self.set_text_cursor_pos(set_pos)
+#             else:
+#                 print 'setting selection'
+#                 self.set_text_selection(qtselection_start, set_pos)
+#             self._disable_signals = False
         
     def set_update(self, *args, **kwargs):
         if not self._disable_signals:
@@ -479,11 +480,11 @@ class RexpTextTab(ui_RexpTextTab):
             self._update = True
             
     def check_update(self):
-        '''Does the match / replacement and updates the view in real time'''
+#         '''Does the match / replacement and updates the view in real time'''
         if self._update:
             self._disable_signals = True
             self.clear_error()
-            
+             
             rsearch_rtext = researched_richtext
             self._update = False
             # print 'Updating', time.time()
@@ -499,7 +500,7 @@ class RexpTextTab(ui_RexpTextTab):
 #            assert(len(deformated_str) <= len(self.getText()))
             true_pos = richtext.get_position(deformated, 
                                 visible_position = qtpos)[0]
-            
+             
             regexp = self.get_regexp()
             try:
                 re.compile(regexp)
@@ -508,10 +509,10 @@ class RexpTextTab(ui_RexpTextTab):
             else:
                 self.Replace_groups_model.set_groups(textools.
                     get_regex_groups(regexp))
-            
+             
 #            import pprint
 #            pprint.pprint(self.Replace_groups_model.data)
-            
+             
             error = None
             # These slow it down alot and are not really useful. Just
             # display an error
@@ -540,7 +541,7 @@ class RexpTextTab(ui_RexpTextTab):
                 self.set_text_cursor_pos(true_pos, no_anchor=True)
                 self._disable_signals = False
                 return                
-
+ 
             # Set the html to the correct values
             if self.Radio_match.isChecked():
                 print 'doing match'
@@ -551,16 +552,16 @@ class RexpTextTab(ui_RexpTextTab):
                 replaced = textools.re_search_replace(researched, 
                     rlist, preview = True)
                 html_list = rsearch_rtext.re_search_format_html(replaced)
-            
+             
             raw_html = richtext.get_str_formated_html(
                 html_list)
             self.setHtml(raw_html)
-            
+             
             visible_pos = richtext.get_position(html_list,
                     true_position = true_pos)[1]
             print 'new visible pos', visible_pos
             self.set_text_cursor_pos(visible_pos, no_anchor=True)
-            
+             
             self._researched = researched
             self._html_list = html_list
             self._disable_signals = False
@@ -664,3 +665,6 @@ class TabCentralWidget(StdWidget):
         self.tabs_upper.addTab(self.tab_regexp, "Reg Exp")
         self.tab_regexp.setEnabled(True)
 
+if __name__ == '__main__':
+    import SearchTheSky
+    SearchTheSky.main(debug = True)
