@@ -337,8 +337,9 @@ class ui_RexpFilesTab(StdWidget):
 class ui_RexpTextTab(StdWidget):
     _NAME_ = 'REG_EXP_PART_TEXT'
 
-    def __init__(self, parent=None):
+    def __init__(self, TEdit, parent=None):
         super(ui_RexpTextTab, self).__init__(parent)
+        self.TextEdit = TEdit
         self.std_settings = {
         ('self.getDeformated', 'self.setText') : ([],[
         '''talking about expecting the Spanish Inquisition in the '''
@@ -423,12 +424,13 @@ class ui_RexpTextTab(StdWidget):
         Label_error.hide()
         self.Label_error = Label_error
         
-        TextEdit = QtGui.QTextEdit()
+        # TextEdit = QtGui.QTextEdit()
+        TextEdit = self.TextEdit
         TextEdit.setAcceptRichText(False)
         TextEdit.setAutoFormatting(QtGui.QTextEdit.AutoNone)
         
         vbox_main.addWidget(TextEdit)
-        self.TextEdit = TextEdit
+        # self.TextEdit = TextEdit
         
         Replace_groups_model = ReplaceGroupsModel(data = [['','', False]], 
                 checkboxes=True, headers = ['Group', 'Replace'])

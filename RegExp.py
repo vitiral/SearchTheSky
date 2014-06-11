@@ -119,7 +119,7 @@ class RegExp(ui_RegExp):
         self.setup_signals()
     
     def setup_signals(self):
-        self.Ledit_regexp.textEdited.connect(self.regexp_edited)
+        # self.Ledit_regexp.textEdited.connect(self.regexp_edited)
         self.But_replace.pressed.connect(self.But_replace_pressed)
         # I couldn't find out how to connect to this damn thing, so I made
         # a custom one
@@ -314,9 +314,28 @@ class RexpFilesTab(ui_RexpFilesTab):
         self.Replace_groups_model.set_groups(
             textools.get_regex_groups(self._regexp_text))
 
+class RexpTextEdit(QtGui.QTextEdit):
+    def __init__(self, deformat, update_formatting, parent = None):
+        super(RexpTextEdit, self).__init__(parent=parent)
+        self.deformat = deformat
+        self.update_formatting = update_formatting
+        
+    def keyPressEvent(self, event):
+        key = event.key()
+        print "key:", key
+        Qt = QtCore.Qt
+        #if not(QtCore.Qt.Key_Home <= event.key() <= QtCore.Qt.Key_Direction_R):
+        if (Qt.Key_Space <= key <= Qt.Key_division or 
+            key in set((Qt.Key_Tab, Qt.Key_Backtab, Qt.Key_Backspace, Qt.Key_Return, Qt.Key_Enter, Qt.Key_Delete))):
+            print "deformatting"
+            self.deformat()
+        super(RexpTextEdit, self).keyPressEvent(event)
+        self.update_formatting()
+
 class RexpTextTab(ui_RexpTextTab):
     def __init__(self, get_regexp, parent = None):
-        super(RexpTextTab, self).__init__(parent)
+        super(RexpTextTab, self).__init__(RexpTextEdit(self.deformat_html, self.update_formatting), parent=parent)
+        
         self.get_regexp = get_regexp
         
         self._disable_signals = False
@@ -326,8 +345,6 @@ class RexpTextTab(ui_RexpTextTab):
         
         self.connect_signals()
     
-    
-        
     def get_html_object_selcted_info(self):
         qtpos = self.get_text_cursor_pos()
         html_list = self._html_list
@@ -371,10 +388,10 @@ class RexpTextTab(ui_RexpTextTab):
             
         QtCore.QObject.connect(self.TextEdit, 
             QtCore.SIGNAL("cursorPositionChanged()"), self.cursor_changed)
-        
+         
         QtCore.QObject.connect(self.TextEdit, 
             QtCore.SIGNAL("textChanged()"), self.set_update)
-    
+
     def toggle_replace_groups(self):
         if not self.isVisible:
             return
@@ -382,9 +399,28 @@ class RexpTextTab(ui_RexpTextTab):
             self.Replace_groups.show()
         else:
             self.Replace_groups.hide()
-            
+    
+    def deformat_html(self):
+        raw_html = self.getHtml()
+        deformated = richtext.deformat_html(raw_html,
+                (richtext.KEEPIF['black-bold'], 
+                 richtext.KEEPIF['red-underlined-bold']))
+        deformated_str = richtext.get_str_formated_true(deformated)
+        
+        selection = self.get_text_selection()
+        assert(len(selection) == 2)
+        
+        getpos = richtext.get_position
+        
+        true_select = [richtext.get_position(deformated, visible_position = selection[i])[0] for i in xrange(len(selection))]
+        
+        self.setText(deformated_str)
+        self.set_text_selection(*true_select)
+        return deformated
+        
     def cursor_changed(self):
         pass
+    
 #         if not self._disable_signals:
 #             self._disable_signals = True
 #             self._prev_cursor = self.get_text_cursor_pos()
@@ -396,13 +432,13 @@ class RexpTextTab(ui_RexpTextTab):
 #             print "selection:", qtselection_start, qtpos
 #             # print 'Got pos', qtpos
 #             raw_html = self.getHtml()
-#              
+#                
 #             if self._html_list == None:
 #                 self._html_list = richtext.deformat_html(raw_html,
 #                     (richtext.KEEPIF['black-bold'], 
 #                      richtext.KEEPIF['red-underlined-bold']))
 #             deformated = self._html_list
-#              
+#                
 #             try:
 #                 poses, obj_poses = richtext.get_position(deformated, 
 #                             visible_position = qtpos, 
@@ -412,7 +448,7 @@ class RexpTextTab(ui_RexpTextTab):
 #                 return
 #             true_pos, vis_pos, html_pos = poses
 #             index, rel_vis_pos = obj_poses
-#              
+#                
 #             hpart = deformated[index]
 #             if index > 0:
 #                 prev_hpart = deformated[index - 1]
@@ -482,89 +518,93 @@ class RexpTextTab(ui_RexpTextTab):
     def check_update(self):
 #         '''Does the match / replacement and updates the view in real time'''
         if self._update:
-            self._disable_signals = True
-            self.clear_error()
-             
-            rsearch_rtext = researched_richtext
-            self._update = False
-            # print 'Updating', time.time()
-            qtpos = self.get_text_cursor_pos() # visible pos
-            # print 'Got pos', qtpos
-            raw_html = self.getHtml()
-            # we need to get the "True Position", i.e. the position without
-            # our formats added in. I think this is the best way to do it
-            deformated = richtext.deformat_html(raw_html,
-                (richtext.KEEPIF['black-bold'], 
-                 richtext.KEEPIF['red-underlined-bold']))
-            deformated_str = richtext.get_str_formated_true(deformated)
-#            assert(len(deformated_str) <= len(self.getText()))
-            true_pos = richtext.get_position(deformated, 
-                                visible_position = qtpos)[0]
-             
-            regexp = self.get_regexp()
+            self.update_formatting()
+    
+    def update_formatting(self):
+        self._disable_signals = True
+        self.clear_error()
+        
+        rsearch_rtext = researched_richtext
+        self._update = False
+        # print 'Updating', time.time()
+        qtpos = self.get_text_cursor_pos() # visible pos
+        # print 'Got pos', qtpos
+        raw_html = self.getHtml()
+        # we need to get the "True Position", i.e. the position without
+        # our formats added in. I think this is the best way to do it
+        deformated = richtext.deformat_html(raw_html,
+            (richtext.KEEPIF['black-bold'], 
+             richtext.KEEPIF['red-underlined-bold']))
+        deformated_str = richtext.get_str_formated_true(deformated)
+        
+        #            assert(len(deformated_str) <= len(self.getText()))
+        true_pos = richtext.get_position(deformated, 
+                            visible_position = qtpos)[0]
+         
+        regexp = self.get_regexp()
+        try:
+            re.compile(regexp)
+        except Exception as E:
+            pass
+        else:
+            self.Replace_groups_model.set_groups(textools.
+                get_regex_groups(regexp))
+         
+        #            import pprint
+        #            pprint.pprint(self.Replace_groups_model.data)
+         
+        error = None
+        # These slow it down alot and are not really useful. Just
+        # display an error
+        if regexp == '.':
+            error = "'.' -- Matches everything, not displayed"
+        elif regexp == '\w':
+            error = "'\w' -- Matches all characters, not displayed"
+        elif regexp == '':
+            error = ("'' -- Results not displayed, matches between every"
+                        " character.")
+        else:
             try:
-                re.compile(regexp)
-            except Exception as E:
-                pass
-            else:
-                self.Replace_groups_model.set_groups(textools.
-                    get_regex_groups(regexp))
-             
-#            import pprint
-#            pprint.pprint(self.Replace_groups_model.data)
-             
-            error = None
-            # These slow it down alot and are not really useful. Just
-            # display an error
-            if regexp == '.':
-                error = "'.' -- Matches everything, not displayed"
-            elif regexp == '\w':
-                error = "'\w' -- Matches all characters, not displayed"
-            elif regexp == '':
-                error = ("'' -- Results not displayed, matches between every"
-                            " character.")
-            else:
-                try:
-                    researched = textools.re_search(
-                        regexp, deformated_str)
-                    if len(researched) == 1 and type(researched[0]) == str:
-                        error = "No Match Found"
-                except re.sre_compile.error as E:
-                    error = str(E)
-            if error:
-                print error
-                self.set_error(error)
-                # believe it or not, setText will add formating!           
-                # have to explicitly set html
-                self.setText(deformated_str)
-                print 'er setting pos', true_pos
-                self.set_text_cursor_pos(true_pos, no_anchor=True)
-                self._disable_signals = False
-                return                
- 
-            # Set the html to the correct values
-            if self.Radio_match.isChecked():
-                print 'doing match'
-                html_list = rsearch_rtext.re_search_format_html(researched)
-            else:
-                print 'doing replace'
-                rlist = self.get_replace()
-                replaced = textools.re_search_replace(researched, 
-                    rlist, preview = True)
-                html_list = rsearch_rtext.re_search_format_html(replaced)
-             
-            raw_html = richtext.get_str_formated_html(
-                html_list)
-            self.setHtml(raw_html)
-             
-            visible_pos = richtext.get_position(html_list,
-                    true_position = true_pos)[1]
-            print 'new visible pos', visible_pos
-            self.set_text_cursor_pos(visible_pos, no_anchor=True)
-             
-            self._researched = researched
-            self._html_list = html_list
+                researched = textools.re_search(
+                    regexp, deformated_str)
+                if len(researched) == 1 and type(researched[0]) == str:
+                    error = "No Match Found"
+            except re.sre_compile.error as E:
+                error = str(E)
+        if error:
+            print error
+            self.set_error(error)
+            # believe it or not, setText will add formating!           
+            # have to explicitly set html
+            self.setText(deformated_str)
+            print 'er setting pos', true_pos
+            self.set_text_cursor_pos(true_pos, no_anchor=True)
             self._disable_signals = False
+            return                
+        
+        # Set the html to the correct values
+        if self.Radio_match.isChecked():
+            print 'doing match'
+            html_list = rsearch_rtext.re_search_format_html(researched)
+        else:
+            print 'doing replace'
+            rlist = self.get_replace()
+            replaced = textools.re_search_replace(researched, 
+                rlist, preview = True)
+            html_list = rsearch_rtext.re_search_format_html(replaced)
+         
+        raw_html = richtext.get_str_formated_html(
+            html_list)
+        self.setHtml(raw_html)
+         
+        visible_pos = richtext.get_position(html_list,
+                true_position = true_pos)[1]
+        print 'new visible pos', visible_pos
+        self.set_text_cursor_pos(visible_pos, no_anchor=True)
+         
+        self._researched = researched
+        self._html_list = html_list
+        self._disable_signals = False
 
 #==============================================================================
 # Top Level Classes
