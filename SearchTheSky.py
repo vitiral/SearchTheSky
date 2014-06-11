@@ -102,4 +102,4 @@ def main(debug = False):
     print QtGui.QTextEdit
 
 if __name__ == '__main__':
-    main(debug = True)
+    main(debug = False)

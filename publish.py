@@ -55,7 +55,7 @@ publish.LAST_LINE = '''#     see <http://www.gnu.org/licenses/>'''
 #publish.CLOUDTB_VERSION_URL = (
 #        'https://github.com/cloudformdesign/cloudtb/archive/v0.1.1.zip')
 publish.CLOUDTB_VERSION_URL = (
-        '/home/user/Projects/CloudformDesign/PythonCloudform/cloudtb')
+        'E:\Projects\CloudformDesign\PythonCloudform\cloudtb')
 
 if __name__ == '__main__':
     from cloudtb import dbe

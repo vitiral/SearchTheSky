@@ -119,7 +119,7 @@ class RegExp(ui_RegExp):
         self.setup_signals()
     
     def setup_signals(self):
-        # self.Ledit_regexp.textEdited.connect(self.regexp_edited)
+        self.Ledit_regexp.textEdited.connect(self.regexp_edited)
         self.But_replace.pressed.connect(self.But_replace_pressed)
         # I couldn't find out how to connect to this damn thing, so I made
         # a custom one
@@ -683,7 +683,7 @@ class TabCentralWidget(StdWidget):
         spolicy.setHorizontalPolicy(QtGui.QSizePolicy.Expanding)
         splitter_lower.setSizePolicy(spolicy)
         
-        tabs_lower =  QtGui.QTabWidget()
+        tabs_lower = QtGui.QTabWidget()
         splitter_lower.addWidget(tabs_lower)
         vbox.addWidget(splitter_lower)
         
